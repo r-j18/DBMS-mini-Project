@@ -9,7 +9,7 @@ import {
   ColumnDef,
   SortingState,
 } from '@tanstack/react-table';
-import { Download, ChevronDown, ChevronUp, ChevronsUpDown, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Download, ChevronDown, ChevronUp, ChevronsUpDown, ChevronLeft, ChevronRight, Search } from 'lucide-react';
 import { TableSkeleton } from './Skeleton';
 import { EmptyState } from './EmptyState';
 
@@ -60,11 +60,9 @@ export function DataTable<TData extends Record<string, any>>({
   });
 
   const exportToCSV = () => {
-    // Get visible filtered rows
     const rows = table.getFilteredRowModel().rows.map((r) => r.original);
     if (rows.length === 0) return;
 
-    // Use columns that have an accessorKey or id
     const exportableCols = columns.filter((c: any) => c.accessorKey || c.id);
     const headers = exportableCols.map((c: any) => (typeof c.header === 'string' ? c.header : (c.id || c.accessorKey)));
 
@@ -95,15 +93,18 @@ export function DataTable<TData extends Record<string, any>>({
       {/* Table Toolbar */}
       <div className="flex flex-wrap items-center justify-between gap-2 px-1">
         <div className="flex items-center gap-2">
-          <input
-            type="text"
-            value={globalFilter ?? ''}
-            onChange={(e) => setGlobalFilter(e.target.value)}
-            placeholder="Search records..."
-            className="h-8 px-2.5 text-xs bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-1 focus:ring-slate-400 w-48 sm:w-64"
-          />
-          <span className="text-xs text-slate-500 tabular-nums">
-            {table.getFilteredRowModel().rows.length} total
+          <div className="relative">
+            <input
+              type="text"
+              value={globalFilter ?? ''}
+              onChange={(e) => setGlobalFilter(e.target.value)}
+              placeholder="Search table index..."
+              className="h-8 pl-7 pr-2.5 text-xs bg-[#F6F0E0] dark:bg-[#1F2228] border border-[#D9D0BE] dark:border-[#2E323B] rounded-xs text-[#1F1F1F] dark:text-[#E2DFD8] placeholder:text-[#7A7A7A] font-typewriter focus:outline-none focus:ring-1 focus:ring-[#B08D3C] w-48 sm:w-64"
+            />
+            <Search size={12} className="absolute left-2.5 top-2.5 text-[#7A7A7A]" />
+          </div>
+          <span className="font-mono text-xs text-[#7A7A7A] tabular-nums">
+            [{table.getFilteredRowModel().rows.length} records]
           </span>
         </div>
 
@@ -112,24 +113,24 @@ export function DataTable<TData extends Record<string, any>>({
           <button
             onClick={exportToCSV}
             disabled={data.length === 0 || isLoading}
-            className="h-8 px-2.5 flex items-center gap-1.5 text-xs font-medium bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-50 focus:outline-none focus:ring-1 focus:ring-slate-400 transition-fast"
-            title="Export to CSV"
+            className="h-8 px-2.5 flex items-center gap-1.5 font-typewriter text-xs font-semibold bg-[#F6F0E0] dark:bg-[#1F2228] border border-[#D9D0BE] dark:border-[#2E323B] hover:border-[#B08D3C] rounded-xs text-[#1F1F1F] dark:text-[#E2DFD8] hover:bg-[#EFE9DC] dark:hover:bg-[#252830] disabled:opacity-50 transition-fast shadow-paper"
+            title="Export Records to CSV"
           >
-            <Download size={13} />
-            <span>Export CSV</span>
+            <Download size={13} className="text-[#B08D3C]" />
+            <span>EXPORT CSV</span>
           </button>
         </div>
       </div>
 
       {/* Table Container */}
-      <div className="border border-slate-200 dark:border-slate-800 rounded bg-white dark:bg-slate-900 overflow-hidden">
+      <div className="border border-[#D9D0BE] dark:border-[#2E323B] rounded shadow-folder bg-[#F6F0E0] dark:bg-[#1F2228] overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse text-xs">
             <thead>
               {table.getHeaderGroups().map((headerGroup) => (
                 <tr
                   key={headerGroup.id}
-                  className="border-b border-slate-200 dark:border-slate-800 bg-slate-50/75 dark:bg-slate-950/75 sticky top-0"
+                  className="border-b border-[#D9D0BE] dark:border-[#2E323B] bg-[#E6DFCD] dark:bg-[#1A1C20] sticky top-0"
                 >
                   {headerGroup.headers.map((header) => {
                     const canSort = header.column.getCanSort();
@@ -138,20 +139,20 @@ export function DataTable<TData extends Record<string, any>>({
                       <th
                         key={header.id}
                         onClick={header.column.getToggleSortingHandler()}
-                        className={`px-3 py-2.5 font-semibold text-slate-700 dark:text-slate-300 select-none ${
-                          canSort ? 'cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-900' : ''
+                        className={`px-3 py-2.5 font-typewriter font-bold text-[11px] uppercase tracking-wider text-[#1F1F1F] dark:text-[#E2DFD8] select-none ${
+                          canSort ? 'cursor-pointer hover:bg-[#D9D0BE]/70 dark:hover:bg-[#252830]' : ''
                         }`}
                       >
                         <div className="flex items-center gap-1">
                           {flexRender(header.column.columnDef.header, header.getContext())}
                           {canSort && (
-                            <span className="text-slate-400">
+                            <span className="text-[#7A7A7A]">
                               {isSorted === 'asc' ? (
-                                <ChevronUp size={12} />
+                                <ChevronUp size={12} className="text-[#B3261E]" />
                               ) : isSorted === 'desc' ? (
-                                <ChevronDown size={12} />
+                                <ChevronDown size={12} className="text-[#B3261E]" />
                               ) : (
-                                <ChevronsUpDown size={12} className="opacity-40" />
+                                <ChevronsUpDown size={12} className="opacity-30" />
                               )}
                             </span>
                           )}
@@ -162,7 +163,7 @@ export function DataTable<TData extends Record<string, any>>({
                 </tr>
               ))}
             </thead>
-            <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60">
+            <tbody className="divide-y divide-[#E6DFCD] dark:divide-[#2E323B]/60">
               {isLoading ? (
                 <tr>
                   <td colSpan={columns.length} className="p-0">
@@ -180,12 +181,12 @@ export function DataTable<TData extends Record<string, any>>({
                   <tr
                     key={row.id}
                     onClick={() => onRowClick && onRowClick(row.original)}
-                    className={`hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-fast ${
+                    className={`hover:bg-[#EFE9DC]/90 dark:hover:bg-[#252830] transition-fast ${
                       onRowClick ? 'cursor-pointer' : ''
                     }`}
                   >
                     {row.getVisibleCells().map((cell) => (
-                      <td key={cell.id} className="px-3 py-2 text-slate-700 dark:text-slate-300">
+                      <td key={cell.id} className="px-3 py-2 text-[#1F1F1F] dark:text-[#E2DFD8]">
                         {flexRender(cell.column.columnDef.cell, cell.getContext())}
                       </td>
                     ))}
@@ -198,26 +199,24 @@ export function DataTable<TData extends Record<string, any>>({
 
         {/* Pagination Bar */}
         {!isLoading && table.getPageCount() > 1 && (
-          <div className="flex items-center justify-between px-3 py-2 border-t border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/50 text-xs">
-            <span className="text-slate-500 tabular-nums">
-              Page {table.getState().pagination.pageIndex + 1} of {table.getPageCount()}
+          <div className="flex items-center justify-between px-3 py-2 border-t border-[#D9D0BE] dark:border-[#2E323B] bg-[#E6DFCD]/60 dark:bg-[#1A1C20]/60 text-xs">
+            <span className="font-typewriter text-[#7A7A7A] text-[11px] tabular-nums">
+              DOSSIER PAGE {table.getState().pagination.pageIndex + 1} OF {table.getPageCount()}
             </span>
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-1 font-typewriter">
               <button
                 onClick={() => table.previousPage()}
                 disabled={!table.getCanPreviousPage()}
-                className="p-1 rounded border border-slate-300 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-40 focus:outline-none focus:ring-1 focus:ring-slate-400"
-                aria-label="Previous page"
+                className="px-2 py-0.5 rounded-xs border border-[#D9D0BE] dark:border-[#2E323B] text-[#1F1F1F] dark:text-[#E2DFD8] hover:bg-[#EFE9DC] dark:hover:bg-[#252830] disabled:opacity-40"
               >
-                <ChevronLeft size={14} />
+                PREV
               </button>
               <button
                 onClick={() => table.nextPage()}
                 disabled={!table.getCanNextPage()}
-                className="p-1 rounded border border-slate-300 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-40 focus:outline-none focus:ring-1 focus:ring-slate-400"
-                aria-label="Next page"
+                className="px-2 py-0.5 rounded-xs border border-[#D9D0BE] dark:border-[#2E323B] text-[#1F1F1F] dark:text-[#E2DFD8] hover:bg-[#EFE9DC] dark:hover:bg-[#252830] disabled:opacity-40"
               >
-                <ChevronRight size={14} />
+                NEXT
               </button>
             </div>
           </div>

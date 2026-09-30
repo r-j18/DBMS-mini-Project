@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { X } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface ModalProps {
   isOpen: boolean;
@@ -34,47 +35,57 @@ export const Modal: React.FC<ModalProps> = ({
     };
   }, [isOpen, onClose]);
 
-  if (!isOpen) return null;
-
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto">
-      {/* Backdrop */}
-      <div
-        className="fixed inset-0 bg-slate-900/40 transition-opacity duration-100 ease-out"
-        onClick={onClose}
-        aria-hidden="true"
-      />
+    <AnimatePresence>
+      {isOpen && (
+        <div className="fixed inset-0 z-50 overflow-y-auto">
+          {/* Backdrop */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.15 }}
+            className="fixed inset-0 bg-black/60"
+            onClick={onClose}
+            aria-hidden="true"
+          />
 
-      <div className="flex min-h-full items-center justify-center p-4">
-        <div
-          className={`relative w-full ${maxWidth} bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-md shadow-lg transition-transform duration-100 ease-out`}
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="modal-title"
-        >
-          {/* Header */}
-          <div className="flex items-center justify-between px-5 py-3.5 border-b border-slate-200 dark:border-slate-800">
-            <div>
-              <h3 id="modal-title" className="text-sm font-semibold text-slate-900 dark:text-slate-100">
-                {title}
-              </h3>
-              {subtitle && (
-                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{subtitle}</p>
-              )}
-            </div>
-            <button
-              onClick={onClose}
-              className="p-1 rounded text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 focus:outline-none focus:ring-1 focus:ring-slate-400"
-              aria-label="Close dialog"
+          <div className="flex min-h-full items-center justify-center p-4">
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              transition={{ duration: 0.18, ease: 'easeOut' }}
+              className={`relative w-full ${maxWidth} bg-[#F6F0E0] dark:bg-[#1F2228] border-2 border-[#B08D3C] rounded-xs shadow-2xl overflow-hidden`}
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="modal-title"
             >
-              <X size={16} />
-            </button>
-          </div>
+              {/* Header */}
+              <div className="flex items-center justify-between px-5 py-3.5 border-b border-[#D9D0BE] dark:border-[#2E323B] bg-[#E6DFCD] dark:bg-[#1A1C20]">
+                <div>
+                  <h3 id="modal-title" className="font-typewriter text-sm font-bold text-[#1F1F1F] dark:text-[#E2DFD8] uppercase tracking-wider">
+                    {title}
+                  </h3>
+                  {subtitle && (
+                    <p className="font-typewriter text-[11px] text-[#7A7A7A] mt-0.5">{subtitle}</p>
+                  )}
+                </div>
+                <button
+                  onClick={onClose}
+                  className="p-1 rounded-xs text-[#7A7A7A] hover:text-[#1F1F1F] dark:hover:text-white hover:bg-[#D9D0BE] dark:hover:bg-[#2E323B]"
+                  aria-label="Close dialog"
+                >
+                  <X size={16} />
+                </button>
+              </div>
 
-          {/* Body */}
-          <div className="p-5">{children}</div>
+              {/* Body */}
+              <div className="p-5">{children}</div>
+            </motion.div>
+          </div>
         </div>
-      </div>
-    </div>
+      )}
+    </AnimatePresence>
   );
 };

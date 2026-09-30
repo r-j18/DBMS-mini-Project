@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ColumnDef } from '@tanstack/react-table';
-import { Plus, Edit2, Trash2, Eye, Filter, RotateCcw } from 'lucide-react';
+import { Plus, Edit2, Trash2, Eye, Filter, RotateCcw, Pin } from 'lucide-react';
 import { api } from '../services/api';
 import { Criminal, Police } from '../types';
 import { DataTable } from '../components/common/DataTable';
@@ -177,7 +177,7 @@ export const CriminalsPage: React.FC = () => {
     try {
       setIsDeleting(true);
       await api.deleteCriminal(deleteTarget.criminal_id);
-      showToast('success', `Criminal #${deleteTarget.criminal_id} record deleted`);
+      showToast('success', `Criminal #${deleteTarget.criminal_id} record purged`);
       setDeleteTarget(null);
       loadData();
     } catch (err: any) {
@@ -196,7 +196,6 @@ export const CriminalsPage: React.FC = () => {
     setJailedFilter('');
   };
 
-  // Distinct crimes for filter dropdown
   const distinctCrimes = useMemo(() => {
     const set = new Set<string>();
     criminals.forEach((c) => {
@@ -205,7 +204,6 @@ export const CriminalsPage: React.FC = () => {
     return Array.from(set);
   }, [criminals]);
 
-  // Distinct jail facilities for filter
   const distinctJails = useMemo(() => {
     const set = new Set<string>();
     criminals.forEach((c) => {
@@ -214,23 +212,22 @@ export const CriminalsPage: React.FC = () => {
     return Array.from(set);
   }, [criminals]);
 
-  // Table columns definition
   const columns = useMemo<ColumnDef<Criminal>[]>(
     () => [
       {
         accessorKey: 'criminal_id',
-        header: 'ID',
+        header: 'Case ID',
         cell: (info) => (
-          <span className="font-mono text-slate-500 font-medium">
+          <span className="font-mono text-[#B3261E] font-bold">
             #{info.getValue() as number}
           </span>
         ),
       },
       {
         accessorKey: 'name',
-        header: 'Criminal Name',
+        header: 'Offender Name',
         cell: (info) => (
-          <span className="font-medium text-slate-900 dark:text-slate-100">
+          <span className="font-typewriter font-semibold text-[#1F1F1F] dark:text-[#E2DFD8]">
             {info.getValue() as string}
           </span>
         ),
@@ -244,11 +241,16 @@ export const CriminalsPage: React.FC = () => {
       },
       {
         accessorKey: 'crime',
-        header: 'Crime',
+        header: 'Crime Charge',
+        cell: (info) => (
+          <span className="font-medium text-[#1F1F1F] dark:text-[#E2DFD8]">
+            {info.getValue() as string}
+          </span>
+        ),
       },
       {
         accessorKey: 'investigation_status',
-        header: 'Status',
+        header: 'Status Stamp',
         cell: (info) => <StatusBadge status={info.getValue() as string} size="sm" />,
       },
       {
@@ -258,9 +260,9 @@ export const CriminalsPage: React.FC = () => {
           const row = info.row.original;
           return (
             <div>
-              <span className="font-medium">{row.officer_name || 'Unassigned'}</span>
+              <span className="font-semibold">{row.officer_name || 'Unassigned'}</span>
               {row.officer_rank && (
-                <span className="text-[11px] text-slate-400 block">
+                <span className="text-[11px] text-[#7A7A7A] block font-typewriter">
                   {row.officer_rank} ({row.officer_branch})
                 </span>
               )}
@@ -270,32 +272,32 @@ export const CriminalsPage: React.FC = () => {
       },
       {
         accessorKey: 'court_room_number',
-        header: 'Court Room',
+        header: 'Court Docket',
         cell: (info) => {
           const room = info.getValue() as number | null;
           return room ? (
-            <span className="font-mono text-slate-700 dark:text-slate-300">
+            <span className="font-mono font-semibold text-[#854D0E]">
               Room #{room}
             </span>
           ) : (
-            <span className="text-slate-400 italic">None</span>
+            <span className="text-[#7A7A7A] italic text-xs">None</span>
           );
         },
       },
       {
         accessorKey: 'jail_location',
-        header: 'Jail Facility',
+        header: 'Incarceration',
         cell: (info) => {
           const row = info.row.original;
           return row.jail_location ? (
             <div>
-              <span>{row.jail_location}</span>
-              <span className="text-[11px] text-slate-400 block font-mono">
+              <span className="font-medium">{row.jail_location}</span>
+              <span className="text-[10px] text-[#7A7A7A] block font-mono">
                 {row.barrack_number} • {row.sentence}
               </span>
             </div>
           ) : (
-            <span className="text-slate-400 italic">None</span>
+            <span className="text-[#7A7A7A] italic text-xs">None</span>
           );
         },
       },
@@ -309,22 +311,22 @@ export const CriminalsPage: React.FC = () => {
                 e.stopPropagation();
                 navigate(`/criminals/${row.original.criminal_id}`);
               }}
-              className="p-1 rounded text-slate-500 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-fast"
-              title="View Dossier"
+              className="p-1 rounded text-[#7A7A7A] hover:text-[#1F1F1F] dark:hover:text-white hover:bg-[#EFE9DC] dark:hover:bg-[#2E323B] transition-fast"
+              title="Open Offender Dossier"
             >
               <Eye size={13} />
             </button>
             <button
               onClick={(e) => handleOpenEdit(row.original, e)}
-              className="p-1 rounded text-slate-500 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-fast"
-              title="Edit Criminal"
+              className="p-1 rounded text-[#7A7A7A] hover:text-[#1F1F1F] dark:hover:text-white hover:bg-[#EFE9DC] dark:hover:bg-[#2E323B] transition-fast"
+              title="Edit Dossier"
             >
               <Edit2 size={13} />
             </button>
             <button
               onClick={(e) => handleOpenDelete(row.original, e)}
-              className="p-1 rounded text-rose-600 hover:text-rose-800 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-fast"
-              title="Delete Criminal"
+              className="p-1 rounded text-[#B3261E] hover:text-[#921E18] hover:bg-red-50 dark:hover:bg-red-950/40 transition-fast"
+              title="Purge Record"
             >
               <Trash2 size={13} />
             </button>
@@ -337,38 +339,48 @@ export const CriminalsPage: React.FC = () => {
 
   return (
     <div className="space-y-4">
-      {/* Header with Title and Add Button */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2 border-b border-slate-200 dark:border-slate-800">
+      {/* Header with Title, Case Board Shortcut, and Add Button */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2 border-b border-[#D9D0BE] dark:border-[#2E323B]">
         <div>
-          <h2 className="text-base font-semibold text-slate-900 dark:text-slate-100">
-            Criminal Records Registry
+          <h2 className="font-typewriter text-base font-bold text-[#1F1F1F] dark:text-[#E2DFD8] uppercase tracking-wider">
+            CRIMINAL RECORDS REGISTRY & DOSSIERS
           </h2>
-          <p className="text-xs text-slate-500">
-            Comprehensive registry with investigating officers, judicial assignments, and incarceration details (JOINed)
+          <p className="text-xs text-[#7A7A7A]">
+            Archival records linked to investigating officers, courtroom hearings, and correctional sentences (SQL LEFT JOINs)
           </p>
         </div>
 
-        <button
-          onClick={handleOpenAdd}
-          className="h-8 px-3 flex items-center gap-1.5 text-xs font-medium bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 rounded hover:bg-slate-800 dark:hover:bg-white focus:outline-none focus:ring-1 focus:ring-slate-400 transition-fast shrink-0"
-        >
-          <Plus size={14} />
-          <span>Add criminal</span>
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => navigate('/board')}
+            className="h-8 px-2.5 flex items-center gap-1.5 font-typewriter text-xs font-semibold bg-[#F6F0E0] dark:bg-[#1F2228] text-[#1F1F1F] dark:text-[#E2DFD8] border border-[#B08D3C] rounded-xs hover:bg-[#EFE9DC] transition-fast shadow-paper"
+          >
+            <Pin size={12} className="text-[#B3261E]" />
+            <span>CASE BOARD</span>
+          </button>
+
+          <button
+            onClick={handleOpenAdd}
+            className="h-8 px-3 flex items-center gap-1.5 font-typewriter text-xs font-bold bg-[#1F2D3D] text-[#EFE9DC] hover:bg-[#141D27] rounded-xs transition-fast shrink-0 shadow-paper"
+          >
+            <Plus size={14} />
+            <span>FILE NEW CASE</span>
+          </button>
+        </div>
       </div>
 
       {/* Filter Bar */}
-      <div className="p-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded flex flex-wrap items-center gap-2 text-xs">
-        <div className="flex items-center gap-1.5 text-slate-500 mr-1 font-medium">
-          <Filter size={13} />
-          <span>Filters:</span>
+      <div className="p-3 bg-[#F6F0E0] dark:bg-[#1F2228] border border-[#D9D0BE] dark:border-[#2E323B] rounded shadow-folder flex flex-wrap items-center gap-2 text-xs">
+        <div className="flex items-center gap-1.5 font-typewriter font-bold text-[#7A7A7A] mr-1 text-[11px] uppercase">
+          <Filter size={12} />
+          <span>INDEX FILTERS:</span>
         </div>
 
         {/* Status Filter */}
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
-          className="h-7 px-2 bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded text-slate-700 dark:text-slate-300 focus:outline-none"
+          className="h-7 px-2 bg-[#EFE9DC] dark:bg-[#16181C] border border-[#D9D0BE] dark:border-[#2E323B] rounded-xs text-[#1F1F1F] dark:text-[#E2DFD8] font-typewriter text-[11px] focus:outline-none"
         >
           <option value="">Status: All</option>
           <option value="Open">Open</option>
@@ -380,7 +392,7 @@ export const CriminalsPage: React.FC = () => {
         <select
           value={crimeFilter}
           onChange={(e) => setCrimeFilter(e.target.value)}
-          className="h-7 px-2 bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded text-slate-700 dark:text-slate-300 focus:outline-none"
+          className="h-7 px-2 bg-[#EFE9DC] dark:bg-[#16181C] border border-[#D9D0BE] dark:border-[#2E323B] rounded-xs text-[#1F1F1F] dark:text-[#E2DFD8] font-typewriter text-[11px] focus:outline-none"
         >
           <option value="">Crime: All</option>
           {distinctCrimes.map((crime) => (
@@ -394,7 +406,7 @@ export const CriminalsPage: React.FC = () => {
         <select
           value={officerFilter}
           onChange={(e) => setOfficerFilter(e.target.value)}
-          className="h-7 px-2 bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded text-slate-700 dark:text-slate-300 focus:outline-none"
+          className="h-7 px-2 bg-[#EFE9DC] dark:bg-[#16181C] border border-[#D9D0BE] dark:border-[#2E323B] rounded-xs text-[#1F1F1F] dark:text-[#E2DFD8] font-typewriter text-[11px] focus:outline-none"
         >
           <option value="">Officer: All</option>
           {officers.map((off) => (
@@ -404,11 +416,11 @@ export const CriminalsPage: React.FC = () => {
           ))}
         </select>
 
-        {/* Jail Location Filter */}
+        {/* Jail Filter */}
         <select
           value={jailFilter}
           onChange={(e) => setJailFilter(e.target.value)}
-          className="h-7 px-2 bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded text-slate-700 dark:text-slate-300 focus:outline-none"
+          className="h-7 px-2 bg-[#EFE9DC] dark:bg-[#16181C] border border-[#D9D0BE] dark:border-[#2E323B] rounded-xs text-[#1F1F1F] dark:text-[#E2DFD8] font-typewriter text-[11px] focus:outline-none"
         >
           <option value="">Jail: All</option>
           {distinctJails.map((j) => (
@@ -418,68 +430,64 @@ export const CriminalsPage: React.FC = () => {
           ))}
         </select>
 
-        {/* Court Record Toggle */}
+        {/* Court Record Filter */}
         <select
           value={courtFilter}
           onChange={(e) => setCourtFilter(e.target.value)}
-          className="h-7 px-2 bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded text-slate-700 dark:text-slate-300 focus:outline-none"
+          className="h-7 px-2 bg-[#EFE9DC] dark:bg-[#16181C] border border-[#D9D0BE] dark:border-[#2E323B] rounded-xs text-[#1F1F1F] dark:text-[#E2DFD8] font-typewriter text-[11px] focus:outline-none"
         >
           <option value="">Court Assignment: All</option>
-          <option value="true">Has Court Record</option>
-          <option value="false">No Court Record</option>
+          <option value="true">Has Court Docket</option>
+          <option value="false">No Court Docket</option>
         </select>
 
-        {/* Jailed Toggle */}
+        {/* Jailed Filter */}
         <select
           value={jailedFilter}
           onChange={(e) => setJailedFilter(e.target.value)}
-          className="h-7 px-2 bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded text-slate-700 dark:text-slate-300 focus:outline-none"
+          className="h-7 px-2 bg-[#EFE9DC] dark:bg-[#16181C] border border-[#D9D0BE] dark:border-[#2E323B] rounded-xs text-[#1F1F1F] dark:text-[#E2DFD8] font-typewriter text-[11px] focus:outline-none"
         >
           <option value="">Incarceration: All</option>
-          <option value="true">Is Jailed</option>
-          <option value="false">Not Jailed</option>
+          <option value="true">Incarcerated</option>
+          <option value="false">Not Incarcerated</option>
         </select>
 
         {(statusFilter || crimeFilter || officerFilter || jailFilter || courtFilter || jailedFilter) && (
           <button
             onClick={resetFilters}
-            className="h-7 px-2 text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 flex items-center gap-1 font-medium transition-fast"
+            className="h-7 px-2 text-[#7A7A7A] hover:text-[#B3261E] flex items-center gap-1 font-typewriter text-[11px] font-bold transition-fast"
             title="Reset Filters"
           >
             <RotateCcw size={11} />
-            <span>Reset</span>
+            <span>RESET</span>
           </button>
         )}
       </div>
 
-      {/* Main Data Table */}
+      {/* Main Table */}
       <DataTable
         data={criminals}
         columns={columns}
         isLoading={loading}
         onRowClick={(row) => navigate(`/criminals/${row.criminal_id}`)}
-        exportFileName="criminals-registry.csv"
+        exportFileName="criminals-dossier-registry.csv"
         pageSize={15}
-        emptyTitle="No criminals found"
-        emptyDescription="Try clearing active filters or register a new criminal into the registry."
+        emptyTitle="No records on file"
+        emptyDescription="No matching criminal files found in the archive for current criteria."
       />
 
-      {/* Add / Edit Side Drawer */}
+      {/* Add / Edit Drawer */}
       <Drawer
         isOpen={isDrawerOpen}
         onClose={() => setIsDrawerOpen(false)}
-        title={editingCriminal ? `Edit Criminal #${editingCriminal.criminal_id}` : 'Add Criminal'}
-        subtitle={
-          editingCriminal
-            ? 'Update offender profile and case status'
-            : 'Register a new criminal record in the department database'
-        }
+        title={editingCriminal ? `UPDATE FILE #${editingCriminal.criminal_id}` : 'FILE NEW CASE DOSSIER'}
+        subtitle="Department record registration form — Form CRB-04"
       >
-        <form onSubmit={handleFormSubmit} className="space-y-4 text-xs">
+        <form onSubmit={handleFormSubmit} className="space-y-4 text-xs font-typewriter">
           {/* Criminal ID */}
           <div>
-            <label className="block font-medium text-slate-700 dark:text-slate-300 mb-1">
-              Criminal ID <span className="text-rose-500">*</span>
+            <label className="block font-bold text-[#1F1F1F] dark:text-[#E2DFD8] mb-1">
+              Case / Criminal ID <span className="text-[#B3261E]">*</span>
             </label>
             <input
               type="number"
@@ -487,111 +495,100 @@ export const CriminalsPage: React.FC = () => {
               disabled={!!editingCriminal}
               onChange={(e) => setFormData({ ...formData, criminal_id: e.target.value })}
               placeholder="e.g. 207"
-              className={`w-full h-8 px-2.5 font-mono bg-white dark:bg-slate-900 border rounded text-slate-900 dark:text-slate-100 disabled:bg-slate-100 dark:disabled:bg-slate-800 disabled:opacity-75 focus:outline-none focus:ring-1 ${
-                formErrors.criminal_id
-                  ? 'border-rose-400 focus:ring-rose-400'
-                  : 'border-slate-300 dark:border-slate-700 focus:ring-slate-400'
+              className={`w-full h-8 px-2.5 font-mono bg-[#EFE9DC] dark:bg-[#16181C] border rounded-xs text-[#1F1F1F] dark:text-[#E2DFD8] disabled:opacity-60 focus:outline-none ${
+                formErrors.criminal_id ? 'border-[#B3261E]' : 'border-[#D9D0BE] dark:border-[#2E323B]'
               }`}
             />
             {formErrors.criminal_id && (
-              <p className="text-rose-500 text-[11px] mt-0.5">{formErrors.criminal_id}</p>
+              <p className="text-[#B3261E] text-[11px] mt-0.5">{formErrors.criminal_id}</p>
             )}
           </div>
 
           {/* Full Name */}
           <div>
-            <label className="block font-medium text-slate-700 dark:text-slate-300 mb-1">
-              Full Name <span className="text-rose-500">*</span>
+            <label className="block font-bold text-[#1F1F1F] dark:text-[#E2DFD8] mb-1">
+              Legal Offender Name <span className="text-[#B3261E]">*</span>
             </label>
             <input
               type="text"
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              placeholder="Offender name"
-              className={`w-full h-8 px-2.5 bg-white dark:bg-slate-900 border rounded text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-1 ${
-                formErrors.name
-                  ? 'border-rose-400 focus:ring-rose-400'
-                  : 'border-slate-300 dark:border-slate-700 focus:ring-slate-400'
+              placeholder="Full name"
+              className={`w-full h-8 px-2.5 bg-[#EFE9DC] dark:bg-[#16181C] border rounded-xs text-[#1F1F1F] dark:text-[#E2DFD8] focus:outline-none ${
+                formErrors.name ? 'border-[#B3261E]' : 'border-[#D9D0BE] dark:border-[#2E323B]'
               }`}
             />
             {formErrors.name && (
-              <p className="text-rose-500 text-[11px] mt-0.5">{formErrors.name}</p>
+              <p className="text-[#B3261E] text-[11px] mt-0.5">{formErrors.name}</p>
             )}
           </div>
 
           {/* Age */}
           <div>
-            <label className="block font-medium text-slate-700 dark:text-slate-300 mb-1">
-              Age <span className="text-slate-400 font-normal">(18 - 100)</span>{' '}
-              <span className="text-rose-500">*</span>
+            <label className="block font-bold text-[#1F1F1F] dark:text-[#E2DFD8] mb-1">
+              Age (18 - 100) <span className="text-[#B3261E]">*</span>
             </label>
             <input
               type="number"
               value={formData.age}
               onChange={(e) => setFormData({ ...formData, age: e.target.value })}
               placeholder="e.g. 32"
-              className={`w-full h-8 px-2.5 font-mono bg-white dark:bg-slate-900 border rounded text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-1 ${
-                formErrors.age
-                  ? 'border-rose-400 focus:ring-rose-400'
-                  : 'border-slate-300 dark:border-slate-700 focus:ring-slate-400'
+              className={`w-full h-8 px-2.5 font-mono bg-[#EFE9DC] dark:bg-[#16181C] border rounded-xs text-[#1F1F1F] dark:text-[#E2DFD8] focus:outline-none ${
+                formErrors.age ? 'border-[#B3261E]' : 'border-[#D9D0BE] dark:border-[#2E323B]'
               }`}
             />
             {formErrors.age && (
-              <p className="text-rose-500 text-[11px] mt-0.5">{formErrors.age}</p>
+              <p className="text-[#B3261E] text-[11px] mt-0.5">{formErrors.age}</p>
             )}
           </div>
 
           {/* Crime */}
           <div>
-            <label className="block font-medium text-slate-700 dark:text-slate-300 mb-1">
-              Crime Allegation <span className="text-rose-500">*</span>
+            <label className="block font-bold text-[#1F1F1F] dark:text-[#E2DFD8] mb-1">
+              Crime Charge <span className="text-[#B3261E]">*</span>
             </label>
             <input
               type="text"
               value={formData.crime}
               onChange={(e) => setFormData({ ...formData, crime: e.target.value })}
-              placeholder="e.g. Robbery, Cyber Fraud, Theft"
-              className={`w-full h-8 px-2.5 bg-white dark:bg-slate-900 border rounded text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-1 ${
-                formErrors.crime
-                  ? 'border-rose-400 focus:ring-rose-400'
-                  : 'border-slate-300 dark:border-slate-700 focus:ring-slate-400'
+              placeholder="e.g. Robbery, Theft, Cyber Fraud"
+              className={`w-full h-8 px-2.5 bg-[#EFE9DC] dark:bg-[#16181C] border rounded-xs text-[#1F1F1F] dark:text-[#E2DFD8] focus:outline-none ${
+                formErrors.crime ? 'border-[#B3261E]' : 'border-[#D9D0BE] dark:border-[#2E323B]'
               }`}
             />
             {formErrors.crime && (
-              <p className="text-rose-500 text-[11px] mt-0.5">{formErrors.crime}</p>
+              <p className="text-[#B3261E] text-[11px] mt-0.5">{formErrors.crime}</p>
             )}
           </div>
 
           {/* Investigating Officer */}
           <div>
-            <label className="block font-medium text-slate-700 dark:text-slate-300 mb-1">
-              Investigating Officer <span className="text-rose-500">*</span>
+            <label className="block font-bold text-[#1F1F1F] dark:text-[#E2DFD8] mb-1">
+              Investigating Officer <span className="text-[#B3261E]">*</span>
             </label>
             <select
               value={formData.investigating_officer}
               onChange={(e) => setFormData({ ...formData, investigating_officer: e.target.value })}
-              className={`w-full h-8 px-2 bg-white dark:bg-slate-900 border rounded text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-1 ${
-                formErrors.investigating_officer
-                  ? 'border-rose-400 focus:ring-rose-400'
-                  : 'border-slate-300 dark:border-slate-700 focus:ring-slate-400'
+              className={`w-full h-8 px-2 bg-[#EFE9DC] dark:bg-[#16181C] border rounded-xs text-[#1F1F1F] dark:text-[#E2DFD8] focus:outline-none ${
+                formErrors.investigating_officer ? 'border-[#B3261E]' : 'border-[#D9D0BE] dark:border-[#2E323B]'
               }`}
             >
-              <option value="">Select an officer</option>
+              <option value="">Select investigating officer</option>
               {officers.map((off) => (
                 <option key={off.police_id} value={off.police_id}>
-                  #{off.police_id} - {off.name} ({off.rank}, {off.branch})
+                  Badge #{off.police_id} - {off.rank} {off.name} ({off.branch})
                 </option>
               ))}
             </select>
             {formErrors.investigating_officer && (
-              <p className="text-rose-500 text-[11px] mt-0.5">{formErrors.investigating_officer}</p>
+              <p className="text-[#B3261E] text-[11px] mt-0.5">{formErrors.investigating_officer}</p>
             )}
           </div>
 
-          {/* Investigation Status */}
+          {/* Status */}
           <div>
-            <label className="block font-medium text-slate-700 dark:text-slate-300 mb-1">
-              Investigation Status <span className="text-rose-500">*</span>
+            <label className="block font-bold text-[#1F1F1F] dark:text-[#E2DFD8] mb-1">
+              Investigation Status <span className="text-[#B3261E]">*</span>
             </label>
             <select
               value={formData.investigation_status}
@@ -601,7 +598,7 @@ export const CriminalsPage: React.FC = () => {
                   investigation_status: e.target.value as any,
                 })
               }
-              className="w-full h-8 px-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-1 focus:ring-slate-400"
+              className="w-full h-8 px-2 bg-[#EFE9DC] dark:bg-[#16181C] border border-[#D9D0BE] dark:border-[#2E323B] rounded-xs text-[#1F1F1F] dark:text-[#E2DFD8] focus:outline-none"
             >
               <option value="Open">Open</option>
               <option value="Under Investigation">Under Investigation</option>
@@ -609,22 +606,21 @@ export const CriminalsPage: React.FC = () => {
             </select>
           </div>
 
-          {/* Action buttons */}
-          <div className="flex items-center justify-end gap-2 pt-4 border-t border-slate-200 dark:border-slate-800">
+          <div className="flex items-center justify-end gap-2 pt-4 border-t border-[#D9D0BE] dark:border-[#2E323B]">
             <button
               type="button"
               onClick={() => setIsDrawerOpen(false)}
               disabled={isSubmitting}
-              className="px-3 py-1.5 border border-slate-300 dark:border-slate-700 rounded text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-50"
+              className="px-3 py-1.5 border border-[#D9D0BE] dark:border-[#2E323B] rounded-xs text-[#1F1F1F] dark:text-[#E2DFD8] hover:bg-[#EFE9DC] disabled:opacity-50"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={isSubmitting}
-              className="px-3 py-1.5 bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 rounded hover:bg-slate-800 dark:hover:bg-white font-medium disabled:opacity-50"
+              className="px-3 py-1.5 bg-[#1F2D3D] text-[#EFE9DC] hover:bg-[#141D27] rounded-xs font-bold disabled:opacity-50 shadow-paper"
             >
-              {isSubmitting ? 'Saving...' : editingCriminal ? 'Save changes' : 'Add criminal'}
+              {isSubmitting ? 'Recording...' : editingCriminal ? 'Save Changes' : 'File Case'}
             </button>
           </div>
         </form>
@@ -635,13 +631,13 @@ export const CriminalsPage: React.FC = () => {
         isOpen={!!deleteTarget}
         onClose={() => setDeleteTarget(null)}
         onConfirm={handleConfirmDelete}
-        title="Confirm Criminal Deletion"
+        title="Purge Criminal Record"
         message={
           deleteTarget
-            ? `Are you sure you want to delete criminal #${deleteTarget.criminal_id} (${deleteTarget.name})? This action cannot be undone.`
+            ? `Confirm permanent deletion of Case Dossier #${deleteTarget.criminal_id} (${deleteTarget.name}). Linked judicial records and correctional sentences must be unassigned first.`
             : ''
         }
-        confirmText="Delete criminal"
+        confirmText="Purge Record"
         isSubmitting={isDeleting}
       />
     </div>

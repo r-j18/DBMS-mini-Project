@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { X } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface DrawerProps {
   isOpen: boolean;
@@ -34,47 +35,58 @@ export const Drawer: React.FC<DrawerProps> = ({
     };
   }, [isOpen, onClose]);
 
-  if (!isOpen) return null;
-
   return (
-    <div className="fixed inset-0 z-50 overflow-hidden">
-      {/* Backdrop */}
-      <div
-        className="fixed inset-0 bg-slate-900/40 transition-opacity duration-100 ease-out"
-        onClick={onClose}
-        aria-hidden="true"
-      />
+    <AnimatePresence>
+      {isOpen && (
+        <div className="fixed inset-0 z-50 overflow-hidden">
+          {/* Backdrop */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.15 }}
+            className="fixed inset-0 bg-black/50"
+            onClick={onClose}
+            aria-hidden="true"
+          />
 
-      <div className="fixed inset-y-0 right-0 flex pl-10">
-        <div
-          className={`w-screen ${width} bg-white dark:bg-slate-900 border-l border-slate-200 dark:border-slate-800 shadow-xl flex flex-col transition-transform duration-100 ease-out`}
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="drawer-title"
-        >
-          {/* Header */}
-          <div className="flex items-center justify-between px-5 py-4 border-b border-slate-200 dark:border-slate-800">
-            <div>
-              <h2 id="drawer-title" className="text-base font-semibold text-slate-900 dark:text-slate-100">
-                {title}
-              </h2>
-              {subtitle && (
-                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{subtitle}</p>
-              )}
-            </div>
-            <button
-              onClick={onClose}
-              className="p-1 rounded text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 focus:outline-none focus:ring-1 focus:ring-slate-400"
-              aria-label="Close panel"
+          <div className="fixed inset-y-0 right-0 flex pl-10">
+            {/* Sheet of Paper Slide */}
+            <motion.div
+              initial={{ x: '100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '100%' }}
+              transition={{ duration: 0.2, ease: 'easeOut' }}
+              className={`w-screen ${width} bg-[#F6F0E0] dark:bg-[#1F2228] border-l-4 border-[#B08D3C] shadow-2xl flex flex-col`}
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="drawer-title"
             >
-              <X size={18} />
-            </button>
-          </div>
+              {/* Header */}
+              <div className="flex items-center justify-between px-5 py-4 border-b border-[#D9D0BE] dark:border-[#2E323B] bg-[#E6DFCD] dark:bg-[#1A1C20]">
+                <div>
+                  <h2 id="drawer-title" className="font-typewriter text-sm font-bold text-[#1F1F1F] dark:text-[#E2DFD8] uppercase tracking-wider">
+                    {title}
+                  </h2>
+                  {subtitle && (
+                    <p className="font-typewriter text-[11px] text-[#7A7A7A] mt-0.5">{subtitle}</p>
+                  )}
+                </div>
+                <button
+                  onClick={onClose}
+                  className="p-1 rounded-xs text-[#7A7A7A] hover:text-[#1F1F1F] dark:hover:text-white hover:bg-[#D9D0BE] dark:hover:bg-[#2E323B] focus:outline-none"
+                  aria-label="Close panel"
+                >
+                  <X size={18} />
+                </button>
+              </div>
 
-          {/* Body */}
-          <div className="flex-1 overflow-y-auto p-5">{children}</div>
+              {/* Body */}
+              <div className="flex-1 overflow-y-auto p-5">{children}</div>
+            </motion.div>
+          </div>
         </div>
-      </div>
-    </div>
+      )}
+    </AnimatePresence>
   );
 };

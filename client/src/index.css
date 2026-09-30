@@ -3,43 +3,201 @@
 @tailwind utilities;
 
 @layer base {
-  * {
-    border-color: theme('colors.slate.200');
+  :root {
+    --paper-bg: #EFE9DC;
+    --paper-surface: #F6F0E0;
+    --paper-border: #D9D0BE;
+    --ink: #1F1F1F;
+    --navy: #1F2D3D;
+    --stamp-red: #B3261E;
+    --brass: #B08D3C;
   }
-  .dark * {
-    border-color: theme('colors.slate.800');
+
+  .dark {
+    --paper-bg: #16181C;
+    --paper-surface: #1F2228;
+    --paper-border: #2E323B;
+    --ink: #E2DFD8;
+    --navy: #141D27;
+    --stamp-red: #C53B33;
+    --brass: #C7A24D;
   }
 
   body {
+    background-color: var(--paper-bg);
+    color: var(--ink);
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
     font-size: 14px;
     line-height: 1.5;
   }
+
+  /* Paper texture noise via inline SVG feTurbulence Data URI */
+  .paper-noise {
+    background-image: 
+      radial-gradient(rgba(31, 31, 31, 0.04) 1px, transparent 0),
+      url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.03'/%3E%3C/svg%3E");
+    background-size: 24px 24px, 120px 120px;
+  }
+
+  .dark .paper-noise {
+    background-image: 
+      radial-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 0),
+      url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.02'/%3E%3C/svg%3E");
+    background-size: 24px 24px, 120px 120px;
+  }
+
+  /* Ruled lines pattern for dossier effect */
+  .ruled-paper {
+    background-image: repeating-linear-gradient(
+      transparent,
+      transparent 27px,
+      rgba(176, 141, 60, 0.15) 28px
+    );
+  }
+
+  .dark .ruled-paper {
+    background-image: repeating-linear-gradient(
+      transparent,
+      transparent 27px,
+      rgba(255, 255, 255, 0.05) 28px
+    );
+  }
+
+  /* Corkboard texture for /board */
+  .corkboard-bg {
+    background-color: #9c6644;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='corkNoise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.6' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23corkNoise)' opacity='0.16'/%3E%3C/svg%3E");
+    box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.4);
+  }
+
+  .dark .corkboard-bg {
+    background-color: #3b281c;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='corkNoise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.6' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23corkNoise)' opacity='0.22'/%3E%3C/svg%3E");
+    box-shadow: inset 0 0 40px rgba(0, 0, 0, 0.7);
+  }
 }
 
-/* Tabular figures for IDs and counts */
-.tabular-nums {
-  font-variant-numeric: tabular-nums;
+/* Rubber Stamp Styling */
+.rubber-stamp {
+  font-family: 'Special Elite', 'Courier Prime', monospace;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-width: 2.5px;
+  border-style: double;
+  padding: 0.15rem 0.5rem;
+  border-radius: 2px;
+  mask-image: radial-gradient(circle, rgba(0,0,0,1) 70%, rgba(0,0,0,0.85) 100%);
+  user-select: none;
+  font-weight: 700;
 }
 
-/* Subtle transitions only (<150ms) */
-.transition-fast {
-  transition-property: color, background-color, border-color, opacity, transform;
-  transition-duration: 120ms;
-  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+/* Redacted bar effect */
+.redacted-bar {
+  position: relative;
+  background-color: #1F1F1F;
+  color: transparent !important;
+  user-select: none;
+  border-radius: 2px;
+  padding: 0 4px;
+  display: inline-block;
+  transition: all 200ms ease;
+  cursor: pointer;
+}
+.redacted-bar::before {
+  content: 'REDACTED';
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #F6F0E0;
+  font-family: 'Special Elite', monospace;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  opacity: 0.9;
+  transition: opacity 200ms ease;
+}
+.redacted-bar:hover,
+.redacted-bar:focus {
+  background-color: transparent;
+  color: inherit !important;
+  user-select: text;
+}
+.redacted-bar:hover::before,
+.redacted-bar:focus::before {
+  opacity: 0;
 }
 
-/* Custom minimal scrollbar */
+/* Caution Tape Header for Destructive Dialogs */
+.caution-tape-header {
+  background: repeating-linear-gradient(
+    -45deg,
+    #B08D3C,
+    #B08D3C 10px,
+    #1F1F1F 10px,
+    #1F1F1F 20px
+  );
+  height: 8px;
+  width: 100%;
+}
+
+/* Police light bar loading state */
+@keyframes policeLights {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+.police-light-bar {
+  height: 3px;
+  background: linear-gradient(
+    90deg,
+    #B3261E 0%,
+    #B3261E 25%,
+    #1F2D3D 25%,
+    #1F2D3D 50%,
+    #1E40AF 50%,
+    #1E40AF 75%,
+    #B3261E 75%,
+    #B3261E 100%
+  );
+  background-size: 200% 100%;
+  animation: policeLights 1.2s linear infinite;
+}
+
+/* Respect reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+.reduce-motion * {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+  scroll-behavior: auto !important;
+}
+
+/* Custom scrollbars */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 7px;
+  height: 7px;
 }
 ::-webkit-scrollbar-track {
-  background: transparent;
+  background: var(--paper-bg);
 }
 ::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
-  border-radius: 3px;
+  background: #B08D3C66;
+  border-radius: 2px;
 }
-.dark ::-webkit-scrollbar-thumb {
-  background: #334155;
+::-webkit-scrollbar-thumb:hover {
+  background: #B08D3C99;
 }

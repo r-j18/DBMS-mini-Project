@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ColumnDef } from '@tanstack/react-table';
-import { Plus, Edit2, Trash2, Eye, Filter, RotateCcw } from 'lucide-react';
+import { Plus, Edit2, Trash2, Eye, Filter, RotateCcw, Shield } from 'lucide-react';
 import { api } from '../services/api';
 import { Police } from '../types';
 import { DataTable } from '../components/common/DataTable';
@@ -141,7 +141,7 @@ export const PolicePage: React.FC = () => {
           number: formData.number.trim(),
           address: formData.address.trim(),
         });
-        showToast('success', 'Officer details updated successfully');
+        showToast('success', 'Officer record updated');
       } else {
         await api.createPolice({
           police_id: parseInt(formData.police_id, 10),
@@ -152,7 +152,7 @@ export const PolicePage: React.FC = () => {
           number: formData.number.trim(),
           address: formData.address.trim(),
         });
-        showToast('success', 'New officer appointed successfully');
+        showToast('success', 'New officer appointed to bureau roster');
       }
       setIsDrawerOpen(false);
       loadPolice();
@@ -178,7 +178,6 @@ export const PolicePage: React.FC = () => {
     }
   };
 
-  // Distinct branches and ranks for filters
   const distinctRanks = useMemo(() => {
     const set = new Set<string>();
     officers.forEach((o) => set.add(o.rank));
@@ -191,14 +190,13 @@ export const PolicePage: React.FC = () => {
     return Array.from(set);
   }, [officers]);
 
-  // Columns definition
   const columns = useMemo<ColumnDef<Police>[]>(
     () => [
       {
         accessorKey: 'police_id',
-        header: 'Police ID',
+        header: 'Badge ID',
         cell: (info) => (
-          <span className="font-mono text-slate-500 font-medium">
+          <span className="font-mono text-[#B08D3C] font-bold">
             #{info.getValue() as number}
           </span>
         ),
@@ -207,7 +205,7 @@ export const PolicePage: React.FC = () => {
         accessorKey: 'name',
         header: 'Officer Name',
         cell: (info) => (
-          <span className="font-medium text-slate-900 dark:text-slate-100">
+          <span className="font-typewriter font-semibold text-[#1F1F1F] dark:text-[#E2DFD8]">
             {info.getValue() as string}
           </span>
         ),
@@ -216,14 +214,14 @@ export const PolicePage: React.FC = () => {
         accessorKey: 'rank',
         header: 'Rank',
         cell: (info) => (
-          <span className="px-1.5 py-0.5 rounded text-[11px] font-medium bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
+          <span className="px-1.5 py-0.5 rounded-xs text-[11px] font-typewriter font-bold bg-[#E6DFCD] dark:bg-[#2C303A] text-[#1F1F1F] dark:text-[#E2DFD8]">
             {info.getValue() as string}
           </span>
         ),
       },
       {
         accessorKey: 'branch',
-        header: 'Branch',
+        header: 'Division / Unit',
       },
       {
         accessorKey: 'age',
@@ -234,9 +232,9 @@ export const PolicePage: React.FC = () => {
       },
       {
         accessorKey: 'number',
-        header: 'Contact',
+        header: 'Contact Line',
         cell: (info) => (
-          <span className="font-mono text-slate-600 dark:text-slate-400">
+          <span className="font-mono text-[#4B4B4B] dark:text-[#A09D95]">
             {info.getValue() as string}
           </span>
         ),
@@ -245,7 +243,7 @@ export const PolicePage: React.FC = () => {
         accessorKey: 'address',
         header: 'Station / Address',
         cell: (info) => (
-          <span className="truncate max-w-xs block text-slate-600 dark:text-slate-400">
+          <span className="truncate max-w-xs block text-[#6B685F] dark:text-[#A09D95]">
             {info.getValue() as string}
           </span>
         ),
@@ -257,9 +255,9 @@ export const PolicePage: React.FC = () => {
           const val = (info.getValue() as number) || 0;
           return (
             <span
-              className={`font-mono px-2 py-0.5 rounded text-xs tabular-nums ${
+              className={`font-mono px-2 py-0.5 rounded-xs text-xs font-bold tabular-nums ${
                 val > 0
-                  ? 'bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 font-semibold'
+                  ? 'bg-[#E6DFCD] dark:bg-[#2C303A] text-[#1F1F1F] dark:text-[#E2DFD8]'
                   : 'text-slate-400'
               }`}
             >
@@ -278,21 +276,21 @@ export const PolicePage: React.FC = () => {
                 e.stopPropagation();
                 navigate(`/police/${row.original.police_id}`);
               }}
-              className="p-1 rounded text-slate-500 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-fast"
+              className="p-1 rounded text-[#7A7A7A] hover:text-[#1F1F1F] dark:hover:text-white hover:bg-[#EFE9DC] dark:hover:bg-[#2E323B] transition-fast"
               title="View Officer Dossier"
             >
               <Eye size={13} />
             </button>
             <button
               onClick={(e) => handleOpenEdit(row.original, e)}
-              className="p-1 rounded text-slate-500 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-fast"
+              className="p-1 rounded text-[#7A7A7A] hover:text-[#1F1F1F] dark:hover:text-white hover:bg-[#EFE9DC] dark:hover:bg-[#2E323B] transition-fast"
               title="Edit Officer"
             >
               <Edit2 size={13} />
             </button>
             <button
               onClick={(e) => handleOpenDelete(row.original, e)}
-              className="p-1 rounded text-rose-600 hover:text-rose-800 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-fast"
+              className="p-1 rounded text-[#B3261E] hover:text-[#921E18] hover:bg-red-50 dark:hover:bg-red-950/40 transition-fast"
               title="Delete Officer"
             >
               <Trash2 size={13} />
@@ -307,36 +305,36 @@ export const PolicePage: React.FC = () => {
   return (
     <div className="space-y-4">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2 border-b border-slate-200 dark:border-slate-800">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2 border-b border-[#D9D0BE] dark:border-[#2E323B]">
         <div>
-          <h2 className="text-base font-semibold text-slate-900 dark:text-slate-100">
-            Police Officers Roster
+          <h2 className="font-typewriter text-base font-bold text-[#1F1F1F] dark:text-[#E2DFD8] uppercase tracking-wider">
+            INVESTIGATING OFFICERS SERVICE ROSTER
           </h2>
-          <p className="text-xs text-slate-500">
-            Law enforcement roster with rank, branch division, and real-time caseload metrics
+          <p className="text-xs text-[#7A7A7A]">
+            Bureau personnel index with rank seniority, divisional postings, and active criminal investigation loads
           </p>
         </div>
 
         <button
           onClick={handleOpenAdd}
-          className="h-8 px-3 flex items-center gap-1.5 text-xs font-medium bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 rounded hover:bg-slate-800 dark:hover:bg-white focus:outline-none focus:ring-1 focus:ring-slate-400 transition-fast shrink-0"
+          className="h-8 px-3 flex items-center gap-1.5 font-typewriter text-xs font-bold bg-[#1F2D3D] text-[#EFE9DC] hover:bg-[#141D27] rounded-xs transition-fast shrink-0 shadow-paper"
         >
           <Plus size={14} />
-          <span>Add officer</span>
+          <span>APPOINT OFFICER</span>
         </button>
       </div>
 
       {/* Filter Bar */}
-      <div className="p-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded flex flex-wrap items-center gap-2 text-xs">
-        <div className="flex items-center gap-1.5 text-slate-500 mr-1 font-medium">
-          <Filter size={13} />
-          <span>Filters:</span>
+      <div className="p-3 bg-[#F6F0E0] dark:bg-[#1F2228] border border-[#D9D0BE] dark:border-[#2E323B] rounded shadow-folder flex flex-wrap items-center gap-2 text-xs">
+        <div className="flex items-center gap-1.5 font-typewriter font-bold text-[#7A7A7A] mr-1 text-[11px] uppercase">
+          <Filter size={12} />
+          <span>ROSTER FILTERS:</span>
         </div>
 
         <select
           value={rankFilter}
           onChange={(e) => setRankFilter(e.target.value)}
-          className="h-7 px-2 bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded text-slate-700 dark:text-slate-300 focus:outline-none"
+          className="h-7 px-2 bg-[#EFE9DC] dark:bg-[#16181C] border border-[#D9D0BE] dark:border-[#2E323B] rounded-xs text-[#1F1F1F] dark:text-[#E2DFD8] font-typewriter text-[11px] focus:outline-none"
         >
           <option value="">Rank: All</option>
           {distinctRanks.map((r) => (
@@ -349,9 +347,9 @@ export const PolicePage: React.FC = () => {
         <select
           value={branchFilter}
           onChange={(e) => setBranchFilter(e.target.value)}
-          className="h-7 px-2 bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded text-slate-700 dark:text-slate-300 focus:outline-none"
+          className="h-7 px-2 bg-[#EFE9DC] dark:bg-[#16181C] border border-[#D9D0BE] dark:border-[#2E323B] rounded-xs text-[#1F1F1F] dark:text-[#E2DFD8] font-typewriter text-[11px] focus:outline-none"
         >
-          <option value="">Branch: All</option>
+          <option value="">Division: All</option>
           {distinctBranches.map((b) => (
             <option key={b} value={b}>
               {b}
@@ -365,11 +363,11 @@ export const PolicePage: React.FC = () => {
               setRankFilter('');
               setBranchFilter('');
             }}
-            className="h-7 px-2 text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 flex items-center gap-1 font-medium transition-fast"
+            className="h-7 px-2 text-[#7A7A7A] hover:text-[#B3261E] flex items-center gap-1 font-typewriter text-[11px] font-bold transition-fast"
             title="Reset Filters"
           >
             <RotateCcw size={11} />
-            <span>Reset</span>
+            <span>RESET</span>
           </button>
         )}
       </div>
@@ -380,28 +378,24 @@ export const PolicePage: React.FC = () => {
         columns={columns}
         isLoading={loading}
         onRowClick={(row) => navigate(`/police/${row.police_id}`)}
-        exportFileName="police-roster.csv"
+        exportFileName="police-service-roster.csv"
         pageSize={15}
-        emptyTitle="No police officers found"
-        emptyDescription="Try clearing active filters or register a new police personnel record."
+        emptyTitle="No officers on file"
+        emptyDescription="No registered personnel found matching filter criteria."
       />
 
       {/* Drawer */}
       <Drawer
         isOpen={isDrawerOpen}
         onClose={() => setIsDrawerOpen(false)}
-        title={editingOfficer ? `Edit Officer #${editingOfficer.police_id}` : 'Add Police Officer'}
-        subtitle={
-          editingOfficer
-            ? 'Update officer station, branch assignment, or contact details'
-            : 'Register a new law enforcement officer in the database'
-        }
+        title={editingOfficer ? `UPDATE OFFICER #${editingOfficer.police_id}` : 'APPOINT BUREAU OFFICER'}
+        subtitle="Department service record filing — Form CRB-02"
       >
-        <form onSubmit={handleFormSubmit} className="space-y-4 text-xs">
-          {/* Police ID */}
+        <form onSubmit={handleFormSubmit} className="space-y-4 text-xs font-typewriter">
+          {/* Badge ID */}
           <div>
-            <label className="block font-medium text-slate-700 dark:text-slate-300 mb-1">
-              Police Badge ID <span className="text-rose-500">*</span>
+            <label className="block font-bold text-[#1F1F1F] dark:text-[#E2DFD8] mb-1">
+              Badge / Personnel ID <span className="text-[#B3261E]">*</span>
             </label>
             <input
               type="number"
@@ -409,160 +403,144 @@ export const PolicePage: React.FC = () => {
               disabled={!!editingOfficer}
               onChange={(e) => setFormData({ ...formData, police_id: e.target.value })}
               placeholder="e.g. 106"
-              className={`w-full h-8 px-2.5 font-mono bg-white dark:bg-slate-900 border rounded text-slate-900 dark:text-slate-100 disabled:bg-slate-100 dark:disabled:bg-slate-800 disabled:opacity-75 focus:outline-none focus:ring-1 ${
-                formErrors.police_id
-                  ? 'border-rose-400 focus:ring-rose-400'
-                  : 'border-slate-300 dark:border-slate-700 focus:ring-slate-400'
+              className={`w-full h-8 px-2.5 font-mono bg-[#EFE9DC] dark:bg-[#16181C] border rounded-xs text-[#1F1F1F] dark:text-[#E2DFD8] disabled:opacity-60 focus:outline-none ${
+                formErrors.police_id ? 'border-[#B3261E]' : 'border-[#D9D0BE] dark:border-[#2E323B]'
               }`}
             />
             {formErrors.police_id && (
-              <p className="text-rose-500 text-[11px] mt-0.5">{formErrors.police_id}</p>
+              <p className="text-[#B3261E] text-[11px] mt-0.5">{formErrors.police_id}</p>
             )}
           </div>
 
           {/* Full Name */}
           <div>
-            <label className="block font-medium text-slate-700 dark:text-slate-300 mb-1">
-              Full Legal Name <span className="text-rose-500">*</span>
+            <label className="block font-bold text-[#1F1F1F] dark:text-[#E2DFD8] mb-1">
+              Full Legal Name <span className="text-[#B3261E]">*</span>
             </label>
             <input
               type="text"
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
               placeholder="Officer name"
-              className={`w-full h-8 px-2.5 bg-white dark:bg-slate-900 border rounded text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-1 ${
-                formErrors.name
-                  ? 'border-rose-400 focus:ring-rose-400'
-                  : 'border-slate-300 dark:border-slate-700 focus:ring-slate-400'
+              className={`w-full h-8 px-2.5 bg-[#EFE9DC] dark:bg-[#16181C] border rounded-xs text-[#1F1F1F] dark:text-[#E2DFD8] focus:outline-none ${
+                formErrors.name ? 'border-[#B3261E]' : 'border-[#D9D0BE] dark:border-[#2E323B]'
               }`}
             />
             {formErrors.name && (
-              <p className="text-rose-500 text-[11px] mt-0.5">{formErrors.name}</p>
+              <p className="text-[#B3261E] text-[11px] mt-0.5">{formErrors.name}</p>
             )}
           </div>
 
           {/* Rank */}
           <div>
-            <label className="block font-medium text-slate-700 dark:text-slate-300 mb-1">
-              Rank <span className="text-rose-500">*</span>
+            <label className="block font-bold text-[#1F1F1F] dark:text-[#E2DFD8] mb-1">
+              Rank <span className="text-[#B3261E]">*</span>
             </label>
             <input
               type="text"
               value={formData.rank}
               onChange={(e) => setFormData({ ...formData, rank: e.target.value })}
               placeholder="e.g. Inspector, Sub Inspector, ACP"
-              className={`w-full h-8 px-2.5 bg-white dark:bg-slate-900 border rounded text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-1 ${
-                formErrors.rank
-                  ? 'border-rose-400 focus:ring-rose-400'
-                  : 'border-slate-300 dark:border-slate-700 focus:ring-slate-400'
+              className={`w-full h-8 px-2.5 bg-[#EFE9DC] dark:bg-[#16181C] border rounded-xs text-[#1F1F1F] dark:text-[#E2DFD8] focus:outline-none ${
+                formErrors.rank ? 'border-[#B3261E]' : 'border-[#D9D0BE] dark:border-[#2E323B]'
               }`}
             />
             {formErrors.rank && (
-              <p className="text-rose-500 text-[11px] mt-0.5">{formErrors.rank}</p>
+              <p className="text-[#B3261E] text-[11px] mt-0.5">{formErrors.rank}</p>
             )}
           </div>
 
           {/* Branch */}
           <div>
-            <label className="block font-medium text-slate-700 dark:text-slate-300 mb-1">
-              Branch / Unit <span className="text-rose-500">*</span>
+            <label className="block font-bold text-[#1F1F1F] dark:text-[#E2DFD8] mb-1">
+              Division / Unit <span className="text-[#B3261E]">*</span>
             </label>
             <input
               type="text"
               value={formData.branch}
               onChange={(e) => setFormData({ ...formData, branch: e.target.value })}
               placeholder="e.g. Crime Branch, Cyber Crime, Traffic Branch"
-              className={`w-full h-8 px-2.5 bg-white dark:bg-slate-900 border rounded text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-1 ${
-                formErrors.branch
-                  ? 'border-rose-400 focus:ring-rose-400'
-                  : 'border-slate-300 dark:border-slate-700 focus:ring-slate-400'
+              className={`w-full h-8 px-2.5 bg-[#EFE9DC] dark:bg-[#16181C] border rounded-xs text-[#1F1F1F] dark:text-[#E2DFD8] focus:outline-none ${
+                formErrors.branch ? 'border-[#B3261E]' : 'border-[#D9D0BE] dark:border-[#2E323B]'
               }`}
             />
             {formErrors.branch && (
-              <p className="text-rose-500 text-[11px] mt-0.5">{formErrors.branch}</p>
+              <p className="text-[#B3261E] text-[11px] mt-0.5">{formErrors.branch}</p>
             )}
           </div>
 
           {/* Age */}
           <div>
-            <label className="block font-medium text-slate-700 dark:text-slate-300 mb-1">
-              Age <span className="text-slate-400 font-normal">(21 - 65)</span>{' '}
-              <span className="text-rose-500">*</span>
+            <label className="block font-bold text-[#1F1F1F] dark:text-[#E2DFD8] mb-1">
+              Age (21 - 65) <span className="text-[#B3261E]">*</span>
             </label>
             <input
               type="number"
               value={formData.age}
               onChange={(e) => setFormData({ ...formData, age: e.target.value })}
               placeholder="e.g. 42"
-              className={`w-full h-8 px-2.5 font-mono bg-white dark:bg-slate-900 border rounded text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-1 ${
-                formErrors.age
-                  ? 'border-rose-400 focus:ring-rose-400'
-                  : 'border-slate-300 dark:border-slate-700 focus:ring-slate-400'
+              className={`w-full h-8 px-2.5 font-mono bg-[#EFE9DC] dark:bg-[#16181C] border rounded-xs text-[#1F1F1F] dark:text-[#E2DFD8] focus:outline-none ${
+                formErrors.age ? 'border-[#B3261E]' : 'border-[#D9D0BE] dark:border-[#2E323B]'
               }`}
             />
             {formErrors.age && (
-              <p className="text-rose-500 text-[11px] mt-0.5">{formErrors.age}</p>
+              <p className="text-[#B3261E] text-[11px] mt-0.5">{formErrors.age}</p>
             )}
           </div>
 
-          {/* Phone Number */}
+          {/* Phone */}
           <div>
-            <label className="block font-medium text-slate-700 dark:text-slate-300 mb-1">
-              Contact Phone <span className="text-rose-500">*</span>
+            <label className="block font-bold text-[#1F1F1F] dark:text-[#E2DFD8] mb-1">
+              Official Contact Phone <span className="text-[#B3261E]">*</span>
             </label>
             <input
               type="text"
               value={formData.number}
               onChange={(e) => setFormData({ ...formData, number: e.target.value })}
               placeholder="e.g. 9820112345"
-              className={`w-full h-8 px-2.5 font-mono bg-white dark:bg-slate-900 border rounded text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-1 ${
-                formErrors.number
-                  ? 'border-rose-400 focus:ring-rose-400'
-                  : 'border-slate-300 dark:border-slate-700 focus:ring-slate-400'
+              className={`w-full h-8 px-2.5 font-mono bg-[#EFE9DC] dark:bg-[#16181C] border rounded-xs text-[#1F1F1F] dark:text-[#E2DFD8] focus:outline-none ${
+                formErrors.number ? 'border-[#B3261E]' : 'border-[#D9D0BE] dark:border-[#2E323B]'
               }`}
             />
             {formErrors.number && (
-              <p className="text-rose-500 text-[11px] mt-0.5">{formErrors.number}</p>
+              <p className="text-[#B3261E] text-[11px] mt-0.5">{formErrors.number}</p>
             )}
           </div>
 
           {/* Address */}
           <div>
-            <label className="block font-medium text-slate-700 dark:text-slate-300 mb-1">
-              Station / Residence Address <span className="text-rose-500">*</span>
+            <label className="block font-bold text-[#1F1F1F] dark:text-[#E2DFD8] mb-1">
+              Station / Quarters Address <span className="text-[#B3261E]">*</span>
             </label>
             <input
               type="text"
               value={formData.address}
               onChange={(e) => setFormData({ ...formData, address: e.target.value })}
               placeholder="e.g. Dadar Police Quarters, Mumbai"
-              className={`w-full h-8 px-2.5 bg-white dark:bg-slate-900 border rounded text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-1 ${
-                formErrors.address
-                  ? 'border-rose-400 focus:ring-rose-400'
-                  : 'border-slate-300 dark:border-slate-700 focus:ring-slate-400'
+              className={`w-full h-8 px-2.5 bg-[#EFE9DC] dark:bg-[#16181C] border rounded-xs text-[#1F1F1F] dark:text-[#E2DFD8] focus:outline-none ${
+                formErrors.address ? 'border-[#B3261E]' : 'border-[#D9D0BE] dark:border-[#2E323B]'
               }`}
             />
             {formErrors.address && (
-              <p className="text-rose-500 text-[11px] mt-0.5">{formErrors.address}</p>
+              <p className="text-[#B3261E] text-[11px] mt-0.5">{formErrors.address}</p>
             )}
           </div>
 
-          {/* Action buttons */}
-          <div className="flex items-center justify-end gap-2 pt-4 border-t border-slate-200 dark:border-slate-800">
+          <div className="flex items-center justify-end gap-2 pt-4 border-t border-[#D9D0BE] dark:border-[#2E323B]">
             <button
               type="button"
               onClick={() => setIsDrawerOpen(false)}
               disabled={isSubmitting}
-              className="px-3 py-1.5 border border-slate-300 dark:border-slate-700 rounded text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-50"
+              className="px-3 py-1.5 border border-[#D9D0BE] dark:border-[#2E323B] rounded-xs text-[#1F1F1F] dark:text-[#E2DFD8] hover:bg-[#EFE9DC] disabled:opacity-50"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={isSubmitting}
-              className="px-3 py-1.5 bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 rounded hover:bg-slate-800 dark:hover:bg-white font-medium disabled:opacity-50"
+              className="px-3 py-1.5 bg-[#1F2D3D] text-[#EFE9DC] hover:bg-[#141D27] rounded-xs font-bold disabled:opacity-50 shadow-paper"
             >
-              {isSubmitting ? 'Saving...' : editingOfficer ? 'Save changes' : 'Add officer'}
+              {isSubmitting ? 'Recording...' : editingOfficer ? 'Save Changes' : 'Appoint Officer'}
             </button>
           </div>
         </form>
@@ -573,13 +551,13 @@ export const PolicePage: React.FC = () => {
         isOpen={!!deleteTarget}
         onClose={() => setDeleteTarget(null)}
         onConfirm={handleConfirmDelete}
-        title="Confirm Officer Deletion"
+        title="Remove Officer From Roster"
         message={
           deleteTarget
-            ? `Are you sure you want to delete Officer #${deleteTarget.police_id} (${deleteTarget.name})? Note: officers with active cases cannot be deleted until cases are reassigned.`
+            ? `Confirm removal of Officer #${deleteTarget.police_id} (${deleteTarget.name}). Officers with open assigned criminal cases cannot be purged until cases are reassigned.`
             : ''
         }
-        confirmText="Delete officer"
+        confirmText="Remove Officer"
         isSubmitting={isDeleting}
       />
     </div>

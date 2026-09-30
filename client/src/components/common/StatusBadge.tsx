@@ -1,32 +1,49 @@
 import React from 'react';
+import { Stamp, StampVariant } from './Stamp';
 
 interface StatusBadgeProps {
   status: string;
-  size?: 'sm' | 'md';
+  size?: 'sm' | 'md' | 'lg';
+  animateSlam?: boolean;
+  className?: string;
 }
 
-export const StatusBadge: React.FC<StatusBadgeProps> = ({ status, size = 'md' }) => {
-  const normalized = status?.toLowerCase() || '';
+export const StatusBadge: React.FC<StatusBadgeProps> = ({
+  status,
+  size = 'md',
+  animateSlam = false,
+  className = '',
+}) => {
+  const norm = (status || '').toLowerCase();
 
-  let colorClasses = 'bg-slate-100 text-slate-700 border-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700';
+  let variant: StampVariant = 'custom';
+  let rotate = -1.5;
 
-  if (normalized === 'open') {
-    colorClasses = 'bg-amber-50 text-amber-800 border-amber-200 dark:bg-amber-950/50 dark:text-amber-300 dark:border-amber-850';
-  } else if (normalized === 'under investigation') {
-    colorClasses = 'bg-blue-50 text-blue-800 border-blue-200 dark:bg-blue-950/50 dark:text-blue-300 dark:border-blue-850';
-  } else if (normalized === 'closed') {
-    colorClasses = 'bg-emerald-50 text-emerald-800 border-emerald-200 dark:bg-emerald-950/50 dark:text-emerald-300 dark:border-emerald-850';
-  } else if (normalized === 'incarcerated' || normalized === 'jailed') {
-    colorClasses = 'bg-rose-50 text-rose-800 border-rose-200 dark:bg-rose-950/50 dark:text-rose-300 dark:border-rose-850';
+  if (norm === 'open') {
+    variant = 'open';
+    rotate = -2;
+  } else if (norm === 'under investigation') {
+    variant = 'under investigation';
+    rotate = 1.5;
+  } else if (norm === 'closed') {
+    variant = 'closed';
+    rotate = -1.8;
+  } else if (norm === 'jailed' || norm === 'incarcerated') {
+    variant = 'jailed';
+    rotate = 2;
+  } else if (norm === 'confidential' || norm === 'classified') {
+    variant = 'classified';
+    rotate = -3;
   }
 
-  const sizeClasses = size === 'sm' ? 'px-1.5 py-0.5 text-xs' : 'px-2 py-0.5 text-xs';
-
   return (
-    <span
-      className={`inline-flex items-center font-medium border rounded transition-fast whitespace-nowrap ${colorClasses} ${sizeClasses}`}
-    >
-      {status}
-    </span>
+    <Stamp
+      text={status}
+      variant={variant}
+      size={size}
+      rotateDeg={rotate}
+      animateSlam={animateSlam}
+      className={className}
+    />
   );
 };

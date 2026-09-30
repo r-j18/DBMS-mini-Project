@@ -1,6 +1,7 @@
 import React from 'react';
 import { Modal } from './Modal';
 import { AlertTriangle } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 interface ConfirmDialogProps {
   isOpen: boolean;
@@ -19,28 +20,41 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
   onConfirm,
   title,
   message,
-  confirmText = 'Delete record',
+  confirmText = 'Permanently purge record',
   cancelText = 'Cancel',
   isSubmitting = false,
 }) => {
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={title} maxWidth="max-w-md">
       <div className="space-y-4">
+        {/* Caution Tape Header sliding in */}
+        <motion.div
+          initial={{ scaleX: 0 }}
+          animate={{ scaleX: 1 }}
+          transition={{ duration: 0.25 }}
+          className="caution-tape-header rounded-xs -mt-1 mb-2"
+        />
+
         <div className="flex items-start gap-3">
-          <div className="p-2 bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-400 rounded border border-rose-200 dark:border-rose-900 shrink-0">
+          <div className="p-2 bg-red-100 dark:bg-red-950/60 text-[#B3261E] dark:text-red-400 rounded border border-[#B3261E]/40 shrink-0">
             <AlertTriangle size={18} />
           </div>
-          <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
-            {message}
-          </p>
+          <div>
+            <div className="font-typewriter text-xs font-bold text-[#B3261E] uppercase tracking-wider mb-1">
+              Warning: Destructive Operation
+            </div>
+            <p className="text-xs text-[#4B4B4B] dark:text-[#A09D95] leading-relaxed">
+              {message}
+            </p>
+          </div>
         </div>
 
-        <div className="flex justify-end gap-2 pt-2 border-t border-slate-200 dark:border-slate-800">
+        <div className="flex justify-end gap-2 pt-3 border-t border-[#D9D0BE] dark:border-[#2E323B]">
           <button
             type="button"
             onClick={onClose}
             disabled={isSubmitting}
-            className="px-3 py-1.5 text-xs font-medium border border-slate-300 dark:border-slate-700 rounded text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 focus:outline-none focus:ring-1 focus:ring-slate-400 disabled:opacity-50"
+            className="px-3 py-1.5 text-xs font-medium border border-[#D9D0BE] dark:border-[#2E323B] rounded text-[#1F1F1F] dark:text-[#E2DFD8] hover:bg-[#EFE9DC] dark:hover:bg-[#1F2228] disabled:opacity-50"
           >
             {cancelText}
           </button>
@@ -48,9 +62,9 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
             type="button"
             onClick={onConfirm}
             disabled={isSubmitting}
-            className="px-3 py-1.5 text-xs font-medium rounded bg-rose-700 hover:bg-rose-800 text-white focus:outline-none focus:ring-1 focus:ring-rose-500 disabled:opacity-50"
+            className="px-3 py-1.5 text-xs font-typewriter font-bold rounded bg-[#B3261E] hover:bg-[#921E18] text-white focus:outline-none focus:ring-1 focus:ring-[#B3261E] disabled:opacity-50 tracking-wider uppercase"
           >
-            {isSubmitting ? 'Deleting...' : confirmText}
+            {isSubmitting ? 'Purging...' : confirmText}
           </button>
         </div>
       </div>

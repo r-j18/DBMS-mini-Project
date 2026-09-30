@@ -77,7 +77,7 @@ export const CourtRecordsPage: React.FC = () => {
       setReassignCriminalId(String(record.criminal_id));
       setIsReassignModalOpen(true);
     } catch (err: any) {
-      showToast('error', 'Failed to load candidate criminals');
+      showToast('error', 'Failed to load candidate defendants');
     }
   };
 
@@ -87,11 +87,11 @@ export const CourtRecordsPage: React.FC = () => {
     const cid = parseInt(selectedCriminalId, 10);
 
     if (isNaN(room) || room <= 0) {
-      showToast('error', 'Please enter a valid court room number');
+      showToast('error', 'Enter a valid court room number');
       return;
     }
     if (isNaN(cid) || cid <= 0) {
-      showToast('error', 'Please select a criminal to assign');
+      showToast('error', 'Please select a defendant');
       return;
     }
 
@@ -101,11 +101,11 @@ export const CourtRecordsPage: React.FC = () => {
         court_room_number: room,
         criminal_id: cid,
       });
-      showToast('success', `Assigned Criminal #${cid} to Court Room #${room}`);
+      showToast('success', `Assigned Offender #${cid} to Chamber #${room}`);
       setIsAssignModalOpen(false);
       loadCourtRecords();
     } catch (err: any) {
-      showToast('error', err.message || 'Assignment failed');
+      showToast('error', err.message || 'Docket assignment failed');
     } finally {
       setIsSubmitting(false);
     }
@@ -117,7 +117,7 @@ export const CourtRecordsPage: React.FC = () => {
 
     const cid = parseInt(reassignCriminalId, 10);
     if (isNaN(cid)) {
-      showToast('error', 'Please select a criminal');
+      showToast('error', 'Please select a defendant');
       return;
     }
 
@@ -128,7 +128,7 @@ export const CourtRecordsPage: React.FC = () => {
       });
       showToast(
         'success',
-        `Reassigned Court Room #${reassignTarget.court_room_number} to Criminal #${cid}`
+        `Reassigned Chamber #${reassignTarget.court_room_number} to Offender #${cid}`
       );
       setIsReassignModalOpen(false);
       loadCourtRecords();
@@ -144,11 +144,11 @@ export const CourtRecordsPage: React.FC = () => {
     try {
       setIsDeleting(true);
       await api.deleteCourtRecord(deleteTarget.court_room_number);
-      showToast('success', `Court Room #${deleteTarget.court_room_number} assignment removed`);
+      showToast('success', `Docket for Chamber #${deleteTarget.court_room_number} cleared`);
       setDeleteTarget(null);
       loadCourtRecords();
     } catch (err: any) {
-      showToast('error', err.message || 'Failed to remove court record');
+      showToast('error', err.message || 'Failed to remove docket record');
     } finally {
       setIsDeleting(false);
     }
@@ -158,36 +158,35 @@ export const CourtRecordsPage: React.FC = () => {
     () => [
       {
         accessorKey: 'court_room_number',
-        header: 'Court Room #',
+        header: 'Chamber Room',
         cell: (info) => (
-          <div className="flex items-center gap-1.5 font-mono font-semibold text-slate-900 dark:text-slate-100">
-            <Gavel size={12} className="text-slate-400" />
+          <div className="flex items-center gap-1.5 font-typewriter font-bold text-[#854D0E] dark:text-amber-400">
+            <Gavel size={13} className="text-[#B08D3C]" />
             <span>Room #{info.getValue() as number}</span>
           </div>
         ),
       },
       {
         accessorKey: 'criminal_id',
-        header: 'Criminal ID',
+        header: 'Offender ID',
         cell: (info) => (
-          <span className="font-mono text-slate-500 font-medium">
+          <span className="font-mono text-[#B3261E] font-bold">
             #{info.getValue() as number}
           </span>
         ),
       },
       {
         accessorKey: 'criminal_name',
-        header: 'Assigned Criminal',
+        header: 'Assigned Defendant',
         cell: (info) => (
-          <div className="flex items-center gap-1.5 font-medium text-slate-900 dark:text-slate-100">
-            <User size={12} className="text-slate-400" />
-            <span>{info.getValue() as string}</span>
-          </div>
+          <span className="font-typewriter font-semibold text-[#1F1F1F] dark:text-[#E2DFD8]">
+            {info.getValue() as string}
+          </span>
         ),
       },
       {
         accessorKey: 'crime',
-        header: 'Alleged Crime',
+        header: 'Alleged Charge',
       },
       {
         accessorKey: 'investigation_status',
@@ -200,11 +199,11 @@ export const CourtRecordsPage: React.FC = () => {
         cell: (info) => {
           const row = info.row.original;
           return row.officer_name ? (
-            <span>
+            <span className="font-typewriter text-xs">
               {row.officer_rank} {row.officer_name}
             </span>
           ) : (
-            <span className="text-slate-400 italic">None</span>
+            <span className="text-[#7A7A7A] italic text-xs">None</span>
           );
         },
       },
@@ -212,19 +211,19 @@ export const CourtRecordsPage: React.FC = () => {
         id: 'actions',
         header: 'Actions',
         cell: ({ row }) => (
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1.5">
             <button
               onClick={() => handleOpenReassign(row.original)}
-              className="px-2 py-1 text-xs border border-slate-300 dark:border-slate-700 rounded text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center gap-1 transition-fast"
-              title="Reassign Criminal"
+              className="px-2 py-0.5 text-xs font-typewriter border border-[#D9D0BE] dark:border-[#2E323B] rounded-xs text-[#1F1F1F] dark:text-[#E2DFD8] hover:bg-[#EFE9DC] dark:hover:bg-[#2E323B] flex items-center gap-1 transition-fast"
+              title="Reassign Chamber"
             >
               <RefreshCw size={11} />
               <span>Reassign</span>
             </button>
             <button
               onClick={() => setDeleteTarget(row.original)}
-              className="p-1 rounded text-rose-600 hover:text-rose-800 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-fast"
-              title="Remove Court Assignment"
+              className="p-1 rounded text-[#B3261E] hover:text-[#921E18] hover:bg-red-50 dark:hover:bg-red-950/40 transition-fast"
+              title="Clear Docket Assignment"
             >
               <Trash2 size={13} />
             </button>
@@ -238,22 +237,22 @@ export const CourtRecordsPage: React.FC = () => {
   return (
     <div className="space-y-4">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2 border-b border-slate-200 dark:border-slate-800">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2 border-b border-[#D9D0BE] dark:border-[#2E323B]">
         <div>
-          <h2 className="text-base font-semibold text-slate-900 dark:text-slate-100">
-            Court Room Records & Docket
+          <h2 className="font-typewriter text-base font-bold text-[#1F1F1F] dark:text-[#E2DFD8] uppercase tracking-wider">
+            JUDICIAL COURT ROOM DOCKET
           </h2>
-          <p className="text-xs text-slate-500">
-            Judicial docket linking courtroom chambers to defendants awaiting or under trial
+          <p className="text-xs text-[#7A7A7A]">
+            Active trial chamber listings mapping court room numbers to unassigned defendants
           </p>
         </div>
 
         <button
           onClick={handleOpenAssign}
-          className="h-8 px-3 flex items-center gap-1.5 text-xs font-medium bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 rounded hover:bg-slate-800 dark:hover:bg-white focus:outline-none focus:ring-1 focus:ring-slate-400 transition-fast shrink-0"
+          className="h-8 px-3 flex items-center gap-1.5 font-typewriter text-xs font-bold bg-[#1F2D3D] text-[#EFE9DC] hover:bg-[#141D27] rounded-xs transition-fast shrink-0 shadow-paper"
         >
           <Plus size={14} />
-          <span>Assign to court room</span>
+          <span>ASSIGN TO CHAMBER</span>
         </button>
       </div>
 
@@ -262,47 +261,47 @@ export const CourtRecordsPage: React.FC = () => {
         data={courtRecords}
         columns={columns}
         isLoading={loading}
-        exportFileName="court-records.csv"
+        exportFileName="court-docket-records.csv"
         pageSize={15}
-        emptyTitle="No court records"
-        emptyDescription="No court room assignments recorded. Assign a defendant to a judicial room."
+        emptyTitle="No court records on file"
+        emptyDescription="No court room assignments currently active in the judicial docket."
       />
 
       {/* Assign Modal */}
       <Modal
         isOpen={isAssignModalOpen}
         onClose={() => setIsAssignModalOpen(false)}
-        title="Assign Criminal to Court Room"
-        subtitle="Only defendants currently without a courtroom assignment are listed"
+        title="ASSIGN DEFENDANT TO COURT ROOM"
+        subtitle="Only defendants without a current hearing chamber are listed"
         maxWidth="max-w-md"
       >
-        <form onSubmit={handleAssignSubmit} className="space-y-4 text-xs">
+        <form onSubmit={handleAssignSubmit} className="space-y-4 text-xs font-typewriter">
           <div>
-            <label className="block font-medium text-slate-700 dark:text-slate-300 mb-1">
-              Court Room Number <span className="text-rose-500">*</span>
+            <label className="block font-bold text-[#1F1F1F] dark:text-[#E2DFD8] mb-1">
+              Court Room Number <span className="text-[#B3261E]">*</span>
             </label>
             <input
               type="number"
               value={newRoomNumber}
               onChange={(e) => setNewRoomNumber(e.target.value)}
               placeholder="e.g. 6"
-              className="w-full h-8 px-2.5 font-mono bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-1 focus:ring-slate-400"
+              className="w-full h-8 px-2.5 font-mono bg-[#EFE9DC] dark:bg-[#16181C] border border-[#D9D0BE] dark:border-[#2E323B] rounded-xs text-[#1F1F1F] dark:text-[#E2DFD8] focus:outline-none"
             />
           </div>
 
           <div>
-            <label className="block font-medium text-slate-700 dark:text-slate-300 mb-1">
-              Select Criminal <span className="text-rose-500">*</span>
+            <label className="block font-bold text-[#1F1F1F] dark:text-[#E2DFD8] mb-1">
+              Select Defendant <span className="text-[#B3261E]">*</span>
             </label>
             {unassignedCriminals.length === 0 ? (
-              <div className="p-3 bg-slate-50 dark:bg-slate-800 rounded border border-slate-200 dark:border-slate-700 text-slate-500 text-[11px]">
-                All criminals currently have a court room assigned.
+              <div className="p-3 bg-[#EFE9DC] dark:bg-[#16181C] rounded-xs border border-[#D9D0BE] dark:border-[#2E323B] text-[#7A7A7A] text-[11px]">
+                All registered defendants currently have an assigned court room.
               </div>
             ) : (
               <select
                 value={selectedCriminalId}
                 onChange={(e) => setSelectedCriminalId(e.target.value)}
-                className="w-full h-8 px-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-1 focus:ring-slate-400"
+                className="w-full h-8 px-2 bg-[#EFE9DC] dark:bg-[#16181C] border border-[#D9D0BE] dark:border-[#2E323B] rounded-xs text-[#1F1F1F] dark:text-[#E2DFD8] focus:outline-none"
               >
                 {unassignedCriminals.map((c) => (
                   <option key={c.criminal_id} value={c.criminal_id}>
@@ -313,20 +312,20 @@ export const CourtRecordsPage: React.FC = () => {
             )}
           </div>
 
-          <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-200 dark:border-slate-800">
+          <div className="flex items-center justify-end gap-2 pt-3 border-t border-[#D9D0BE] dark:border-[#2E323B]">
             <button
               type="button"
               onClick={() => setIsAssignModalOpen(false)}
-              className="px-3 py-1.5 border border-slate-300 dark:border-slate-700 rounded text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
+              className="px-3 py-1.5 border border-[#D9D0BE] dark:border-[#2E323B] rounded-xs text-[#1F1F1F] dark:text-[#E2DFD8] hover:bg-[#EFE9DC]"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={unassignedCriminals.length === 0 || isSubmitting}
-              className="px-3 py-1.5 bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 rounded hover:bg-slate-800 dark:hover:bg-white font-medium disabled:opacity-50"
+              className="px-3 py-1.5 bg-[#1F2D3D] text-[#EFE9DC] hover:bg-[#141D27] rounded-xs font-bold disabled:opacity-50 shadow-paper"
             >
-              {isSubmitting ? 'Assigning...' : 'Assign criminal'}
+              {isSubmitting ? 'Assigning...' : 'Assign Chamber'}
             </button>
           </div>
         </form>
@@ -336,19 +335,19 @@ export const CourtRecordsPage: React.FC = () => {
       <Modal
         isOpen={isReassignModalOpen}
         onClose={() => setIsReassignModalOpen(false)}
-        title={`Reassign Court Room #${reassignTarget?.court_room_number}`}
-        subtitle="Select a new or existing unassigned criminal for this courtroom"
+        title={`REASSIGN CHAMBER #${reassignTarget?.court_room_number}`}
+        subtitle="Select a new or current unassigned defendant for this hearing room"
         maxWidth="max-w-md"
       >
-        <form onSubmit={handleReassignSubmit} className="space-y-4 text-xs">
+        <form onSubmit={handleReassignSubmit} className="space-y-4 text-xs font-typewriter">
           <div>
-            <label className="block font-medium text-slate-700 dark:text-slate-300 mb-1">
-              Select Criminal
+            <label className="block font-bold text-[#1F1F1F] dark:text-[#E2DFD8] mb-1">
+              Select Defendant
             </label>
             <select
               value={reassignCriminalId}
               onChange={(e) => setReassignCriminalId(e.target.value)}
-              className="w-full h-8 px-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-1 focus:ring-slate-400"
+              className="w-full h-8 px-2 bg-[#EFE9DC] dark:bg-[#16181C] border border-[#D9D0BE] dark:border-[#2E323B] rounded-xs text-[#1F1F1F] dark:text-[#E2DFD8] focus:outline-none"
             >
               {unassignedCriminals.map((c) => (
                 <option key={c.criminal_id} value={c.criminal_id}>
@@ -359,37 +358,37 @@ export const CourtRecordsPage: React.FC = () => {
             </select>
           </div>
 
-          <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-200 dark:border-slate-800">
+          <div className="flex items-center justify-end gap-2 pt-3 border-t border-[#D9D0BE] dark:border-[#2E323B]">
             <button
               type="button"
               onClick={() => setIsReassignModalOpen(false)}
-              className="px-3 py-1.5 border border-slate-300 dark:border-slate-700 rounded text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
+              className="px-3 py-1.5 border border-[#D9D0BE] dark:border-[#2E323B] rounded-xs text-[#1F1F1F] dark:text-[#E2DFD8] hover:bg-[#EFE9DC]"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={isSubmitting}
-              className="px-3 py-1.5 bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 rounded hover:bg-slate-800 dark:hover:bg-white font-medium disabled:opacity-50"
+              className="px-3 py-1.5 bg-[#1F2D3D] text-[#EFE9DC] hover:bg-[#141D27] rounded-xs font-bold disabled:opacity-50 shadow-paper"
             >
-              {isSubmitting ? 'Updating...' : 'Save assignment'}
+              {isSubmitting ? 'Updating...' : 'Save Reassignment'}
             </button>
           </div>
         </form>
       </Modal>
 
-      {/* Remove Confirm Dialog */}
+      {/* Delete Dialog */}
       <ConfirmDialog
         isOpen={!!deleteTarget}
         onClose={() => setDeleteTarget(null)}
         onConfirm={handleConfirmDelete}
-        title="Remove Court Room Assignment"
+        title="Clear Court Docket Record"
         message={
           deleteTarget
-            ? `Are you sure you want to remove the docket assignment for Court Room #${deleteTarget.court_room_number} (Criminal #${deleteTarget.criminal_id} - ${deleteTarget.criminal_name})?`
+            ? `Confirm removal of Chamber #${deleteTarget.court_room_number} judicial assignment (Defendant #${deleteTarget.criminal_id} - ${deleteTarget.criminal_name}).`
             : ''
         }
-        confirmText="Remove assignment"
+        confirmText="Remove Docket"
         isSubmitting={isDeleting}
       />
     </div>
