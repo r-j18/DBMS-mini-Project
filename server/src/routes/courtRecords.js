@@ -1,5 +1,7 @@
 import { Router } from 'express';
 import { pool } from '../config/db.js';
+import { requireRole } from '../middleware/auth.js';
+import { logAudit } from '../services/auditService.js';
 
 const router = Router();
 
@@ -83,7 +85,6 @@ router.get('/unassigned-criminals', async (req, res) => {
     `;
     const params = [];
 
-    // When editing/reassigning, optionally allow the currently assigned criminal to appear in the list
     if (includeCriminalId) {
       sql += ' OR c.criminal_id = ?';
       params.push(parseInt(includeCriminalId, 10));
@@ -99,8 +100,8 @@ router.get('/unassigned-criminals', async (req, res) => {
   }
 });
 
-// POST /api/court-records - Assign criminal to court room
-router.post('/', async (req, res) => {
+// POST /api/court-records - Assign criminal to court room (Admin only)
+router.post('/', requireRole('admin'), async (req, res) => {
   try {
     const { court_room_number, criminal_id } = req.body;
 
@@ -142,6 +143,15 @@ router.post('/', async (req, res) => {
 
     await pool.query('INSERT INTO COURT_RECORD (court_room_number, criminal_id) VALUES (?, ?)', [roomNum, cid]);
 
+    await logAudit({
+      userId: req.user.userId,
+      username: req.user.username,
+      action: 'CREATE',
+      tableName: 'COURT_RECORD',
+      recordId: String(roomNum),
+      detail: JSON.stringify({ court_room_number: roomNum, criminal_id: cid }),
+    });
+
     res.status(201).json({ message: 'Court record created successfully', court_room_number: roomNum });
   } catch (err) {
     console.error('Error creating court record:', err);
@@ -149,8 +159,8 @@ router.post('/', async (req, res) => {
   }
 });
 
-// PUT /api/court-records/:court_room_number - Reassign criminal to court room
-router.put('/:court_room_number', async (req, res) => {
+// PUT /api/court-records/:court_room_number - Reassign criminal to court room (Admin only)
+router.put('/:court_room_number', requireRole('admin'), async (req, res) => {
   try {
     const roomNum = parseInt(req.params.court_room_number, 10);
     const { criminal_id } = req.body;
@@ -160,13 +170,11 @@ router.put('/:court_room_number', async (req, res) => {
       return res.status(400).json({ error: 'Valid Court Room Number and Criminal ID are required' });
     }
 
-    // Check if criminal exists
     const [criminal] = await pool.query('SELECT criminal_id FROM CRIMINAL WHERE criminal_id = ?', [cid]);
     if (criminal.length === 0) {
       return res.status(400).json({ error: `Criminal with ID ${cid} does not exist` });
     }
 
-    // Check if criminal already assigned to a different court room
     const [existing] = await pool.query(
       'SELECT court_room_number FROM COURT_RECORD WHERE criminal_id = ? AND court_room_number != ?',
       [cid, roomNum]
@@ -186,6 +194,15 @@ router.put('/:court_room_number', async (req, res) => {
       return res.status(404).json({ error: 'Court record not found' });
     }
 
+    await logAudit({
+      userId: req.user.userId,
+      username: req.user.username,
+      action: 'UPDATE',
+      tableName: 'COURT_RECORD',
+      recordId: String(roomNum),
+      detail: JSON.stringify({ court_room_number: roomNum, new_criminal_id: cid }),
+    });
+
     res.json({ message: 'Court record updated successfully' });
   } catch (err) {
     console.error('Error updating court record:', err);
@@ -193,8 +210,8 @@ router.put('/:court_room_number', async (req, res) => {
   }
 });
 
-// DELETE /api/court-records/:court_room_number - Remove court record
-router.delete('/:court_room_number', async (req, res) => {
+// DELETE /api/court-records/:court_room_number - Remove court record (Admin only)
+router.delete('/:court_room_number', requireRole('admin'), async (req, res) => {
   try {
     const roomNum = parseInt(req.params.court_room_number, 10);
     if (isNaN(roomNum)) {
@@ -205,6 +222,15 @@ router.delete('/:court_room_number', async (req, res) => {
     if (result.affectedRows === 0) {
       return res.status(404).json({ error: 'Court record not found' });
     }
+
+    await logAudit({
+      userId: req.user.userId,
+      username: req.user.username,
+      action: 'DELETE',
+      tableName: 'COURT_RECORD',
+      recordId: String(roomNum),
+      detail: 'Deleted court record',
+    });
 
     res.json({ message: 'Court record removed successfully' });
   } catch (err) {

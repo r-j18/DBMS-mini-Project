@@ -1,5 +1,7 @@
 import { Router } from 'express';
 import { pool } from '../config/db.js';
+import { requireRole } from '../middleware/auth.js';
+import { logAudit } from '../services/auditService.js';
 
 const router = Router();
 
@@ -71,6 +73,14 @@ router.get('/', async (req, res) => {
 
     const [rows] = await pool.query(dataSql, [...params, limitNum, offset]);
 
+    // Field-level restriction on the server: strip phone and address for viewers
+    if (req.user?.role === 'viewer') {
+      rows.forEach((r) => {
+        r.number = null;
+        r.address = null;
+      });
+    }
+
     res.json({
       data: rows,
       pagination: {
@@ -105,6 +115,12 @@ router.get('/:id', async (req, res) => {
 
     const officer = officerRows[0];
 
+    // Field-level restriction on the server: strip phone and address for viewers
+    if (req.user?.role === 'viewer') {
+      officer.number = null;
+      officer.address = null;
+    }
+
     // List of criminals investigated by this officer
     const [criminalRows] = await pool.query(
       `SELECT c.criminal_id, c.name, c.age, c.crime, c.investigation_status,
@@ -120,9 +136,9 @@ router.get('/:id', async (req, res) => {
     // Workload statistics
     const workload = {
       total: criminalRows.length,
-      open: criminalRows.filter(c => c.investigation_status === 'Open').length,
-      underInvestigation: criminalRows.filter(c => c.investigation_status === 'Under Investigation').length,
-      closed: criminalRows.filter(c => c.investigation_status === 'Closed').length,
+      open: criminalRows.filter((c) => c.investigation_status === 'Open').length,
+      underInvestigation: criminalRows.filter((c) => c.investigation_status === 'Under Investigation').length,
+      closed: criminalRows.filter((c) => c.investigation_status === 'Closed').length,
     };
 
     res.json({
@@ -136,8 +152,8 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-// POST /api/police - Add new police officer
-router.post('/', async (req, res) => {
+// POST /api/police - Add new police officer (Admin only)
+router.post('/', requireRole('admin'), async (req, res) => {
   try {
     const { police_id, rank, name, branch, age, number, address } = req.body;
 
@@ -177,6 +193,15 @@ router.post('/', async (req, res) => {
       [pid, rank.trim(), name.trim(), branch.trim(), pAge, number.trim(), address.trim()]
     );
 
+    await logAudit({
+      userId: req.user.userId,
+      username: req.user.username,
+      action: 'CREATE',
+      tableName: 'POLICE',
+      recordId: String(pid),
+      detail: JSON.stringify({ rank: rank.trim(), name: name.trim(), branch: branch.trim() }),
+    });
+
     res.status(201).json({ message: 'Police officer created successfully', police_id: pid });
   } catch (err) {
     console.error('Error creating police officer:', err);
@@ -184,8 +209,8 @@ router.post('/', async (req, res) => {
   }
 });
 
-// PUT /api/police/:id - Edit police officer
-router.put('/:id', async (req, res) => {
+// PUT /api/police/:id - Edit police officer (Admin only)
+router.put('/:id', requireRole('admin'), async (req, res) => {
   try {
     const policeId = parseInt(req.params.id, 10);
     const { rank, name, branch, age, number, address } = req.body;
@@ -222,6 +247,15 @@ router.put('/:id', async (req, res) => {
       return res.status(404).json({ error: 'Police officer not found' });
     }
 
+    await logAudit({
+      userId: req.user.userId,
+      username: req.user.username,
+      action: 'UPDATE',
+      tableName: 'POLICE',
+      recordId: String(policeId),
+      detail: JSON.stringify({ rank: rank.trim(), name: name.trim(), branch: branch.trim() }),
+    });
+
     res.json({ message: 'Police officer updated successfully' });
   } catch (err) {
     console.error('Error updating police officer:', err);
@@ -229,8 +263,8 @@ router.put('/:id', async (req, res) => {
   }
 });
 
-// DELETE /api/police/:id - Delete officer with human-readable FK error message
-router.delete('/:id', async (req, res) => {
+// DELETE /api/police/:id - Delete officer with human-readable FK error message (Admin only)
+router.delete('/:id', requireRole('admin'), async (req, res) => {
   try {
     const policeId = parseInt(req.params.id, 10);
     if (isNaN(policeId)) {
@@ -254,6 +288,15 @@ router.delete('/:id', async (req, res) => {
     if (result.affectedRows === 0) {
       return res.status(404).json({ error: 'Police officer not found' });
     }
+
+    await logAudit({
+      userId: req.user.userId,
+      username: req.user.username,
+      action: 'DELETE',
+      tableName: 'POLICE',
+      recordId: String(policeId),
+      detail: 'Deleted police officer record',
+    });
 
     res.json({ message: 'Police officer deleted successfully' });
   } catch (err) {

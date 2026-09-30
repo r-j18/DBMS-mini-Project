@@ -1,5 +1,7 @@
 import { Router } from 'express';
 import { pool } from '../config/db.js';
+import { requireRole } from '../middleware/auth.js';
+import { logAudit } from '../services/auditService.js';
 
 const router = Router();
 
@@ -177,6 +179,8 @@ router.get('/:id', async (req, res) => {
       });
     }
 
+    const isViewer = req.user?.role === 'viewer';
+
     res.json({
       criminal: {
         criminal_id: record.criminal_id,
@@ -190,8 +194,8 @@ router.get('/:id', async (req, res) => {
         rank: record.officer_rank,
         name: record.officer_name,
         branch: record.officer_branch,
-        number: record.officer_number,
-        address: record.officer_address,
+        number: isViewer ? null : record.officer_number,
+        address: isViewer ? null : record.officer_address,
       } : null,
       courtRecord: record.court_room_number ? {
         court_room_number: record.court_room_number,
@@ -209,8 +213,8 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-// POST /api/criminals - Add new criminal
-router.post('/', async (req, res) => {
+// POST /api/criminals - Add new criminal (Admin only)
+router.post('/', requireRole('admin'), async (req, res) => {
   try {
     const { criminal_id, name, age, crime, investigating_officer, investigation_status } = req.body;
 
@@ -255,6 +259,15 @@ router.post('/', async (req, res) => {
       [cid, name.trim(), cAge, crime.trim(), officerId, investigation_status]
     );
 
+    await logAudit({
+      userId: req.user.userId,
+      username: req.user.username,
+      action: 'CREATE',
+      tableName: 'CRIMINAL',
+      recordId: String(cid),
+      detail: JSON.stringify({ name: name.trim(), crime: crime.trim(), investigating_officer: officerId }),
+    });
+
     res.status(201).json({ message: 'Criminal record created successfully', criminal_id: cid });
   } catch (err) {
     console.error('Error creating criminal:', err);
@@ -262,8 +275,8 @@ router.post('/', async (req, res) => {
   }
 });
 
-// PUT /api/criminals/:id - Edit criminal
-router.put('/:id', async (req, res) => {
+// PUT /api/criminals/:id - Edit criminal (Admin only)
+router.put('/:id', requireRole('admin'), async (req, res) => {
   try {
     const criminalId = parseInt(req.params.id, 10);
     const { name, age, crime, investigating_officer, investigation_status } = req.body;
@@ -305,6 +318,15 @@ router.put('/:id', async (req, res) => {
       return res.status(404).json({ error: 'Criminal record not found' });
     }
 
+    await logAudit({
+      userId: req.user.userId,
+      username: req.user.username,
+      action: 'UPDATE',
+      tableName: 'CRIMINAL',
+      recordId: String(criminalId),
+      detail: JSON.stringify({ name: name.trim(), crime: crime.trim(), status: investigation_status }),
+    });
+
     res.json({ message: 'Criminal record updated successfully' });
   } catch (err) {
     console.error('Error updating criminal:', err);
@@ -312,8 +334,8 @@ router.put('/:id', async (req, res) => {
   }
 });
 
-// DELETE /api/criminals/:id - Delete criminal with friendly FK message
-router.delete('/:id', async (req, res) => {
+// DELETE /api/criminals/:id - Delete criminal (Admin only)
+router.delete('/:id', requireRole('admin'), async (req, res) => {
   try {
     const criminalId = parseInt(req.params.id, 10);
     if (isNaN(criminalId)) {
@@ -347,6 +369,15 @@ router.delete('/:id', async (req, res) => {
     if (result.affectedRows === 0) {
       return res.status(404).json({ error: 'Criminal record not found' });
     }
+
+    await logAudit({
+      userId: req.user.userId,
+      username: req.user.username,
+      action: 'DELETE',
+      tableName: 'CRIMINAL',
+      recordId: String(criminalId),
+      detail: 'Deleted criminal record',
+    });
 
     res.json({ message: 'Criminal record deleted successfully' });
   } catch (err) {

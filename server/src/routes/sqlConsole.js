@@ -1,11 +1,13 @@
 import { Router } from 'express';
 import { pool, readonlyPool } from '../config/db.js';
 import { performance } from 'perf_hooks';
+import { requireRole } from '../middleware/auth.js';
+import { logAudit } from '../services/auditService.js';
 
 const router = Router();
 
-// POST /api/sql - Execute ad-hoc read-only SELECT query with security validations
-router.post('/', async (req, res) => {
+// POST /api/sql - Execute ad-hoc read-only SELECT query (Admin only)
+router.post('/', requireRole('admin'), async (req, res) => {
   try {
     const { query } = req.body;
 
@@ -73,7 +75,15 @@ router.post('/', async (req, res) => {
       }
     }
 
-    // 6. Execute query using read-only pool or read-only transaction
+    // 6. Log SQL console execution
+    await logAudit({
+      userId: req.user.userId,
+      username: req.user.username,
+      action: 'SQL_RUN',
+      detail: sanitized,
+    });
+
+    // 7. Execute query using read-only pool or read-only transaction
     const startTime = performance.now();
     let rows;
     let fields;

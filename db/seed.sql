@@ -33,3 +33,13 @@ INSERT INTO JAIL (location, criminal_id, barrack_number, sentence) VALUES
 ('Yerwada Jail', 204, 'b15', '7 Years'),
 ('Arthur Road Jail', 205, 'b11', '2 Years'),
 ('Taloja Jail', 206, 'b13', '4 Years');
+
+-- Populate USERS (bcrypt cost 12 hashes; demo credentials in README.md)
+INSERT INTO USERS (user_id, username, full_name, password_hash, role, is_active) VALUES
+(1, 'admin', 'Chief Inspector Admin', '$2b$12$c6RlEOxIw4zVrcIIXhDjm.63p5n09VNYcbM0TRCfFvZ.XEVv8HaUu', 'admin', TRUE),
+(2, 'viewer', 'Officer Field Viewer', '$2b$12$Pb6uB4kHyH4A6nAn5Y3/y.FNHFtyypLbXGOaJNMc6IvLQrQhdTDQS', 'viewer', TRUE)
+ON DUPLICATE KEY UPDATE
+  full_name = VALUES(full_name),
+  password_hash = VALUES(password_hash),
+  role = VALUES(role),
+  is_active = TRUE;

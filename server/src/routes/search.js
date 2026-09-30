@@ -34,6 +34,13 @@ router.get('/', async (req, res) => {
       [term, term, term]
     );
 
+    // Field-level restriction on the server: strip phone for viewers
+    if (req.user?.role === 'viewer') {
+      police.forEach((p) => {
+        p.number = null;
+      });
+    }
+
     // 3. Search Court Records
     const [courtRecords] = await pool.query(
       `SELECT cr.court_room_number, cr.criminal_id, c.name AS criminal_name, c.crime
