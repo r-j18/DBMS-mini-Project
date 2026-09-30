@@ -1,0 +1,45 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    border-color: theme('colors.slate.200');
+  }
+  .dark * {
+    border-color: theme('colors.slate.800');
+  }
+
+  body {
+    font-size: 14px;
+    line-height: 1.5;
+  }
+}
+
+/* Tabular figures for IDs and counts */
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Subtle transitions only (<150ms) */
+.transition-fast {
+  transition-property: color, background-color, border-color, opacity, transform;
+  transition-duration: 120ms;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Custom minimal scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+}
+.dark ::-webkit-scrollbar-thumb {
+  background: #334155;
+}
