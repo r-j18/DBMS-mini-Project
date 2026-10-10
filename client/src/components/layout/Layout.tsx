@@ -1,9 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Sidebar } from './Sidebar';
 import { Topbar } from './Topbar';
 import { GlobalSearchModal } from '../search/GlobalSearchModal';
+import { ChangePasswordModal } from '../auth/ChangePasswordModal';
+import { useResponsive } from '../../hooks/useResponsive';
 
 const routeTitles: Record<string, string> = {
   '/': 'Central Bureau Case Dashboard',
@@ -14,37 +16,83 @@ const routeTitles: Record<string, string> = {
   '/jail': 'Correctional Detention & Sentencing Log',
   '/queries': 'SQL Query Explorer & Evaluation Console',
   '/schema': 'Relational Architecture & Entity Model',
+  '/users': 'Personnel Directory & Access Control',
+  '/audit-log': 'System Security & Audit Journal',
 };
 
 export const Layout: React.FC = () => {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const [darkMode, setDarkMode] = useState(() => {
-    return localStorage.getItem('crm_theme') === 'dark';
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const hamburgerRef = useRef<HTMLButtonElement>(null);
+
+  const { isMobile, isTablet, isDesktop } = useResponsive();
+
+  // Desktop sidebar expanded state with localStorage persistence
+  const [desktopExpanded, setDesktopExpanded] = useState<boolean>(() => {
+    try {
+      const saved = localStorage.getItem('crm_sidebar_desktop_expanded');
+      return saved !== null ? saved === 'true' : true;
+    } catch {
+      return true;
+    }
   });
+
+  // Tablet sidebar expanded overlay state
+  const [tabletExpandedOverlay, setTabletExpandedOverlay] = useState<boolean>(false);
+
+  // Mobile off-canvas drawer open state
+  const [mobileOpen, setMobileOpen] = useState<boolean>(false);
+
+  const [darkMode, setDarkMode] = useState(() => {
+    try {
+      return localStorage.getItem('crm_theme') === 'dark';
+    } catch {
+      return false;
+    }
+  });
+
   const [reduceMotion, setReduceMotion] = useState(() => {
-    return localStorage.getItem('crm_reduce_motion') === 'true';
+    try {
+      return localStorage.getItem('crm_reduce_motion') === 'true';
+    } catch {
+      return false;
+    }
   });
 
   const location = useLocation();
 
+  const handleToggleDesktop = () => {
+    setDesktopExpanded((prev) => {
+      const next = !prev;
+      try {
+        localStorage.setItem('crm_sidebar_desktop_expanded', String(next));
+      } catch {}
+      return next;
+    });
+  };
+
   useEffect(() => {
-    if (darkMode) {
-      document.documentElement.classList.add('dark');
-      localStorage.setItem('crm_theme', 'dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-      localStorage.setItem('crm_theme', 'light');
-    }
+    try {
+      if (darkMode) {
+        document.documentElement.classList.add('dark');
+        localStorage.setItem('crm_theme', 'dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+        localStorage.setItem('crm_theme', 'light');
+      }
+    } catch {}
   }, [darkMode]);
 
   useEffect(() => {
-    if (reduceMotion) {
-      document.documentElement.classList.add('reduce-motion');
-      localStorage.setItem('crm_reduce_motion', 'true');
-    } else {
-      document.documentElement.classList.remove('reduce-motion');
-      localStorage.setItem('crm_reduce_motion', 'false');
-    }
+    try {
+      if (reduceMotion) {
+        document.documentElement.classList.add('reduce-motion');
+        localStorage.setItem('crm_reduce_motion', 'true');
+      } else {
+        document.documentElement.classList.remove('reduce-motion');
+        localStorage.setItem('crm_reduce_motion', 'false');
+      }
+    } catch {}
   }, [reduceMotion]);
 
   // Global Ctrl+K shortcut
@@ -64,19 +112,28 @@ export const Layout: React.FC = () => {
 
   let currentTitle = routeTitles[location.pathname] || 'Criminal Records Bureau';
   if (location.pathname.startsWith('/criminals/')) {
-    currentTitle = 'CONFIDENTIAL • Offender Dossier File';
+    currentTitle = 'CONFIDENTIAL • Offender Dossier';
   } else if (location.pathname.startsWith('/police/')) {
     currentTitle = 'Investigating Officer Service Record';
   }
 
   return (
-    <div className="flex h-screen w-screen overflow-hidden bg-[#EFE9DC] dark:bg-[#16181C] text-[#1F1F1F] dark:text-[#E2DFD8] paper-noise select-text">
-      {/* Fixed Left Sidebar */}
+    <div className="flex h-[100dvh] w-full max-w-[100vw] overflow-hidden bg-[#EFE9DC] dark:bg-[#16181C] text-[#1F1F1F] dark:text-[#E2DFD8] paper-noise select-text">
+      {/* Sidebar (Responsive across Mobile, Tablet, Desktop) */}
       <Sidebar
-        darkMode={darkMode}
-        toggleDarkMode={toggleDarkMode}
+        isDesktop={isDesktop}
+        isTablet={isTablet}
+        isMobile={isMobile}
+        desktopExpanded={desktopExpanded}
+        onToggleDesktop={handleToggleDesktop}
+        tabletExpandedOverlay={tabletExpandedOverlay}
+        onToggleTablet={() => setTabletExpandedOverlay((prev) => !prev)}
+        onCloseTablet={() => setTabletExpandedOverlay(false)}
+        mobileOpen={mobileOpen}
+        onCloseMobile={() => setMobileOpen(false)}
+        hamburgerButtonRef={hamburgerRef}
         reduceMotion={reduceMotion}
-        toggleReduceMotion={toggleReduceMotion}
+        onOpenChangePassword={() => setShowPasswordModal(true)}
       />
 
       {/* Main Bureau Content Window */}
@@ -88,11 +145,15 @@ export const Layout: React.FC = () => {
           toggleDarkMode={toggleDarkMode}
           reduceMotion={reduceMotion}
           toggleReduceMotion={toggleReduceMotion}
+          isMobile={isMobile}
+          onOpenMobileMenu={() => setMobileOpen(true)}
+          hamburgerRef={hamburgerRef}
+          onOpenChangePassword={() => setShowPasswordModal(true)}
         />
 
-        <main className="flex-1 overflow-y-auto p-3 sm:p-5 relative">
-          {/* Faint Fingerprint Watermark in bottom corner (5% opacity inline SVG) */}
-          <div className="fixed bottom-3 right-5 pointer-events-none opacity-[0.04] dark:opacity-[0.03] z-0 select-none">
+        <main className="flex-1 overflow-y-auto overflow-x-hidden p-2.5 sm:p-4 md:p-5 relative w-full">
+          {/* Faint Fingerprint Watermark in bottom corner (Desktop only) */}
+          <div className="hidden lg:block fixed bottom-3 right-5 pointer-events-none opacity-[0.04] dark:opacity-[0.03] z-0 select-none">
             <svg width="220" height="220" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2">
               <path d="M12 2a10 10 0 0 0-10 10c0 3.3 1.6 6.2 4.1 8" />
               <path d="M12 6a6 6 0 0 0-6 6c0 2 1 3.8 2.5 5" />
@@ -108,10 +169,11 @@ export const Layout: React.FC = () => {
             <AnimatePresence mode="wait">
               <motion.div
                 key={location.pathname}
-                initial={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 8 }}
+                initial={reduceMotion ? undefined : { opacity: 0, y: 6 }}
                 animate={{ opacity: 1, y: 0 }}
-                exit={reduceMotion ? { opacity: 0 } : { opacity: 0, y: -8 }}
-                transition={{ duration: 0.2, ease: 'easeOut' }}
+                exit={reduceMotion ? undefined : { opacity: 0, y: -6 }}
+                transition={{ duration: 0.15, ease: 'easeOut' }}
+                className="w-full"
               >
                 <Outlet />
               </motion.div>
@@ -119,8 +181,8 @@ export const Layout: React.FC = () => {
           </div>
 
           {/* Bureau Formal Form Footer */}
-          <div className="max-w-[1280px] mx-auto w-full mt-8 pt-3 border-t border-[#D9D0BE] dark:border-[#2E323B] flex flex-col sm:flex-row items-center justify-between text-[10px] font-typewriter text-[#7A7A7A] dark:text-[#8C9AA8] select-none">
-            <span>OFFICIAL DOCUMENT • CRIMINAL RECORDS BUREAU • ARCHIVAL SYSTEM</span>
+          <div className="max-w-[1280px] mx-auto w-full mt-6 pt-3 border-t border-[#D9D0BE] dark:border-[#2E323B] flex flex-col sm:flex-row items-center justify-between text-[10px] font-typewriter text-[#7A7A7A] dark:text-[#8C9AA8] select-none gap-1 pb-safe">
+            <span className="text-center sm:text-left">OFFICIAL DOCUMENT • CRIMINAL RECORDS BUREAU • ARCHIVAL SYSTEM</span>
             <span className="font-mono">FORM CRB-01 • REF 2026/REV-B</span>
           </div>
         </main>
@@ -128,6 +190,9 @@ export const Layout: React.FC = () => {
 
       {/* Global Search Dialog */}
       <GlobalSearchModal isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
+
+      {/* Change Password Modal */}
+      <ChangePasswordModal isOpen={showPasswordModal} onClose={() => setShowPasswordModal(false)} />
     </div>
   );
 };

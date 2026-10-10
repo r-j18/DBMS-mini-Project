@@ -11,6 +11,18 @@
     --navy: #1F2D3D;
     --stamp-red: #B3261E;
     --brass: #B08D3C;
+
+    /* Breakpoint tokens */
+    --breakpoint-mobile-max: 767px;
+    --breakpoint-tablet-min: 768px;
+    --breakpoint-tablet-max: 1023px;
+    --breakpoint-desktop-min: 1024px;
+
+    /* Safe area insets */
+    --sat: env(safe-area-inset-top, 0px);
+    --sar: env(safe-area-inset-right, 0px);
+    --sab: env(safe-area-inset-bottom, 0px);
+    --sal: env(safe-area-inset-left, 0px);
   }
 
   .dark {
@@ -21,6 +33,13 @@
     --navy: #141D27;
     --stamp-red: #C53B33;
     --brass: #C7A24D;
+  }
+
+  html, body {
+    height: 100%;
+    height: 100dvh;
+    max-width: 100vw;
+    overflow-x: hidden;
   }
 
   body {
@@ -200,4 +219,36 @@
 }
 ::-webkit-scrollbar-thumb:hover {
   background: #B08D3C99;
+}
+
+/* Safe area inset utilities */
+.pt-safe {
+  padding-top: max(0.5rem, env(safe-area-inset-top, 0px));
+}
+.pb-safe {
+  padding-bottom: max(0.5rem, env(safe-area-inset-bottom, 0px));
+}
+.pl-safe {
+  padding-left: max(0.5rem, env(safe-area-inset-left, 0px));
+}
+.pr-safe {
+  padding-right: max(0.5rem, env(safe-area-inset-right, 0px));
+}
+
+/* Mobile responsive resets */
+@media (max-width: 767px) {
+  body {
+    overflow-x: hidden;
+    width: 100%;
+  }
+
+  /* Reset tilts that could cause overflow */
+  .mobile-no-tilt {
+    transform: none !important;
+  }
+
+  /* Inputs min 16px font to prevent iOS zoom */
+  input, select, textarea {
+    font-size: 16px;
+  }
 }

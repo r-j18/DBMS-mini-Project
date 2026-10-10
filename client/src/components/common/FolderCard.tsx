@@ -23,21 +23,21 @@ export const FolderCard: React.FC<FolderCardProps> = ({
     <div
       onClick={onClick}
       style={{ transform: rotationDeg ? `rotate(${rotationDeg}deg)` : undefined }}
-      className={`relative pt-4 transition-transform duration-200 ${
+      className={`folder-card mobile-no-tilt relative pt-3 sm:pt-4 transition-transform duration-200 ${
         onClick ? 'cursor-pointer hover:scale-[1.01]' : ''
       } ${className}`}
     >
       {/* Folder Tab on top-left */}
       {tabId !== undefined && (
-        <div className="absolute top-0 left-3 z-10 px-3 py-0.5 bg-[#E6DFCD] dark:bg-[#2B303C] border-t border-l border-r border-[#D9D0BE] dark:border-[#2E323B] rounded-t font-typewriter text-[10px] tracking-wider text-[#1F1F1F] dark:text-[#E2DFD8] font-bold shadow-xs">
+        <div className="absolute top-0 left-2 sm:left-3 z-10 px-2 sm:px-3 py-0.5 bg-[#E6DFCD] dark:bg-[#2B303C] border-t border-l border-r border-[#D9D0BE] dark:border-[#2E323B] rounded-t font-typewriter text-[9px] sm:text-[10px] tracking-wider text-[#1F1F1F] dark:text-[#E2DFD8] font-bold shadow-xs">
           <span>{tabLabel} </span>
           <span className="font-mono text-[#B3261E] dark:text-[#F87171]">#{tabId}</span>
         </div>
       )}
 
-      {/* Inline SVG Paperclip on top-right */}
+      {/* Inline SVG Paperclip on top-right (Hidden on small mobile to avoid overflow) */}
       {hasPaperclip && (
-        <div className="absolute -top-2 right-6 z-20 pointer-events-none drop-shadow-xs">
+        <div className="hidden sm:block absolute -top-2 right-6 z-20 pointer-events-none drop-shadow-xs">
           <svg width="18" height="28" viewBox="0 0 16 28" fill="none">
             {/* Realistic metallic paperclip path */}
             <path

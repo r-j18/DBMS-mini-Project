@@ -83,19 +83,23 @@ export const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({ isOpen, on
         className="fixed inset-0 bg-[#141D27]/70 backdrop-blur-xs transition-opacity"
         onClick={onClose}
       />
-      <div className="flex min-h-full items-start justify-center p-4 pt-16">
-        <div className="relative w-full max-w-xl bg-[#F6F0E0] dark:bg-[#1E2024] border-2 border-[#D8D2C2] dark:border-[#383C45] rounded-xs shadow-2xl overflow-hidden">
+      <div className="flex min-h-full items-start justify-center p-0 sm:p-4 pt-0 sm:pt-16">
+        <div className="relative w-full sm:max-w-xl bg-[#F6F0E0] dark:bg-[#1E2024] border-0 sm:border-2 border-[#D8D2C2] dark:border-[#383C45] rounded-none sm:rounded-xs shadow-2xl overflow-hidden min-h-screen sm:min-h-0 flex flex-col">
           {/* Manila Docket Tab Header */}
-          <div className="bg-[#EFE9DC] dark:bg-[#252830] px-4 py-2 border-b border-[#D8D2C2] dark:border-[#383C45] flex items-center justify-between">
+          <div className="bg-[#EFE9DC] dark:bg-[#252830] px-3 sm:px-4 py-2.5 sm:py-2 border-b border-[#D8D2C2] dark:border-[#383C45] flex items-center justify-between pt-safe">
             <div className="flex items-center gap-2">
               <span className="h-2 w-2 rounded-full bg-[#B08D3C]" />
               <span className="font-typewriter text-[11px] font-bold tracking-wider text-[#1F1F1F] dark:text-[#E2DFD8] uppercase">
                 Central Archives // Global Index Query
               </span>
             </div>
-            <span className="font-mono text-[10px] text-[#7A7A7A] uppercase">
-              FORM CRB-IDX
-            </span>
+            <button
+              onClick={onClose}
+              className="w-8 h-8 flex items-center justify-center text-[#7A7A7A] hover:text-[#1F1F1F] dark:hover:text-[#E2DFD8] rounded-xs"
+              aria-label="Close search"
+            >
+              <X size={18} />
+            </button>
           </div>
 
           {/* Search Input Bar */}
@@ -107,7 +111,7 @@ export const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({ isOpen, on
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search criminal alias/ID, officer, courtroom, jail barrack..."
-              className="w-full h-11 px-3 bg-transparent font-typewriter text-xs sm:text-sm text-[#1F1F1F] dark:text-[#E2DFD8] placeholder:text-[#A09D95] focus:outline-none"
+              className="w-full h-11 px-3 bg-transparent font-typewriter text-base sm:text-sm text-[#1F1F1F] dark:text-[#E2DFD8] placeholder:text-[#A09D95] focus:outline-none"
             />
             {loading ? (
               <Loader2 size={16} className="animate-spin text-[#B08D3C] shrink-0" />
@@ -123,7 +127,7 @@ export const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({ isOpen, on
           </div>
 
           {/* Results Area */}
-          <div className="max-h-96 overflow-y-auto p-3 text-xs space-y-3">
+          <div className="flex-1 sm:max-h-96 overflow-y-auto p-3 text-xs space-y-3 pb-safe">
             {!query.trim() && (
               <div className="py-10 text-center font-typewriter text-xs text-[#7A7A7A] space-y-1">
                 <p className="font-semibold text-[#1F1F1F] dark:text-[#E2DFD8]">
