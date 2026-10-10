@@ -3,7 +3,7 @@
 
 A full-stack, utilitarian web application designed for criminal record tracking, judicial docket management, police roster administration, and correctional facility oversight.
 
-Built specifically for DBMS evaluation with **plain parameterized MySQL 8 queries** (no ORMs), visible hand-written SQL, strict validation, and comprehensive query performance instrumentation.
+Built with **plain parameterized MySQL 8 queries** (no ORMs), hand-written SQL, strict validation, and comprehensive query performance instrumentation.
 
 ---
 
@@ -11,7 +11,7 @@ Built specifically for DBMS evaluation with **plain parameterized MySQL 8 querie
 
 - **Frontend**: React 18, Vite, TypeScript, Tailwind CSS, React Router v6, TanStack Table v8, Lucide React icons.
 - **Backend**: Node.js, Express, `mysql2/promise` (plain parameterized SQL only).
-- **Database**: MySQL 8.0 (InnoDB engine, foreign keys with `ON UPDATE CASCADE ON DELETE RESTRICT`).
+- **Database**: MySQL 8.0 / TiDB Cloud (InnoDB engine, foreign keys with `ON UPDATE CASCADE ON DELETE RESTRICT`).
 
 ---
 
@@ -22,19 +22,22 @@ POLICE(police_id PK, `rank`, name, branch, age, number, address)
 CRIMINAL(criminal_id PK, name, age, crime, investigating_officer FK -> POLICE.police_id, investigation_status)
 COURT_RECORD(court_room_number PK, criminal_id FK -> CRIMINAL.criminal_id)
 JAIL(location, criminal_id FK -> CRIMINAL.criminal_id UNIQUE, barrack_number, sentence)
+CRIMINAL_PHOTO(photo_id PK, criminal_id FK -> CRIMINAL.criminal_id UNIQUE, photo_data, thumb_data, mime_type, file_size)
+USERS(user_id PK, username UNIQUE, password_hash, role, is_active)
+AUDIT_LOG(log_id PK, user_id, action, details, ip_address, created_at)
 ```
 
 ### Schema Notes
-- **`` `rank` ``** is a MySQL 8 reserved word and is always backticked.
+- **`` `rank` ``** is a MySQL 8 reserved word and is backticked in all queries.
 - **`JAIL`** declares `criminal_id` as `UNIQUE` to maintain a 1:1 relationship between criminals and detention records.
 - **`investigation_status`** values: `Open`, `Under Investigation`, `Closed`.
 - Foreign key constraints enforce relational integrity: officers and criminals cannot be deleted if active cases or dependencies exist.
 
 ---
 
-## Seed Data & Report Verification
+## Seed Data & System Verification
 
-The database is seeded with exact benchmark data:
+The database includes benchmark sample data:
 - **Police (5 Officers)**:
   - 101: Rajesh Sharma (Inspector, Crime Branch)
   - 102: Amit Patil (Sub Inspector, Cyber Crime)
@@ -48,7 +51,7 @@ The database is seeded with exact benchmark data:
   - 204: Vijay Shah (Age 40, Fraud, Officer 101)
   - 205: Karan Mehta (Age 30, Cyber Crime, Officer 105)
   - 206: Ramesh Patil (Age 38, Assault, Officer 103)
-  - **Verified Average Age**: `(28 + 35 + 26 + 40 + 30 + 38) / 6 = 32.8333`
+  - **Average Convict Age**: `(28 + 35 + 26 + 40 + 30 + 38) / 6 = 32.83`
 - **Court Rooms**: 201 → Room 1, 202 → Room 2, 203 → Room 3, 204 → Room 4, 205 → Room 5 (206 has no court record).
 - **Jail Records**:
   - 201: Arthur Road Jail, barrack b10, 5 Years
@@ -62,87 +65,59 @@ The database is seeded with exact benchmark data:
 
 ## Setup & Installation
 
-### Prerequisites Installation (Windows & Ubuntu)
-To run this project on a completely new system, you must first install **Node.js** and **MySQL Server**.
+### Prerequisites
+- **Node.js** (v18+)
+- **MySQL Server 8.0** or compatible (e.g. TiDB)
 
-#### For Windows:
-1. **Install Node.js**: Download and run the installer from [nodejs.org](https://nodejs.org/).
-2. **Install MySQL**: Download the [MySQL Installer](https://dev.mysql.com/downloads/installer/) and run it. Choose "Server Only" or "Developer Default". Remember the root password you set during installation!
-3. **Add MySQL to PATH**: Ensure `C:\Program Files\MySQL\MySQL Server 8.0\bin` (or similar) is added to your System Environment Variables `PATH` so you can run the `mysql` command from the terminal.
+### 1. Database Configuration
 
-#### For Ubuntu / Debian Linux:
-Run the following commands in your terminal to install both:
-```bash
-# Update package list
-sudo apt update
-
-# Install Node.js and npm
-sudo apt install -y nodejs npm
-
-# Install MySQL Server
-sudo apt install -y mysql-server
-
-# Secure your MySQL installation and set a root password
-sudo mysql_secure_installation
-```
-
----
-
-### 1. Database Configuration (Minimal Setup)
-
-Once MySQL is installed, open your terminal (or Command Prompt) in the root of the project directory and run the following commands to create the database and seed the data.
-
-*(When prompted, enter your MySQL root password)*:
+Initialize the database schema and seed the initial dataset:
 
 ```bash
-# 1. Load the database schema (creates the database and tables)
+# 1. Load database schema
 mysql -u root -p < db/schema.sql
 
-# 2. Populate the tables with demo data and user accounts
+# 2. Populate demo data and accounts
 mysql -u root -p < db/seed.sql
+
+# 3. Apply authentication and photo migrations
+mysql -u root -p crm_db < db/migrations/001_users_audit_log.sql
+mysql -u root -p crm_db < db/migrations/002_criminal_photo.sql
 ```
 
 ### 2. Environment Variables
 
-Navigate into the `server` directory and copy the `.env.example` file to create your local `.env` file:
+Create `server/.env` based on `server/.env.example`:
 
-**Ubuntu / Mac:**
-```bash
-cp server/.env.example server/.env
-```
-**Windows:**
-```cmd
-copy server\.env.example server\.env
-```
-
-Open `server/.env` in a text editor and **update the MySQL password** to match the root password you set during installation:
 ```env
 PORT=5000
 DB_HOST=localhost
 DB_PORT=3306
 DB_USER=root
-DB_PASSWORD=your_actual_mysql_password   <-- UPDATE THIS!
+DB_PASSWORD=your_mysql_password
 DB_NAME=crm_db
 
 # Read-only user for SQL console
 DB_READONLY_USER=crm_readonly
 DB_READONLY_PASSWORD=crm_readonly_pass
+
+JWT_SECRET=your_secure_random_jwt_secret_key
+CLIENT_URL=http://localhost:5173
+NODE_ENV=development
 ```
 
-### 3. Install NPM Dependencies
-
-From the root project folder, install the necessary packages for both the backend and frontend:
+### 3. Install Dependencies
 
 ```bash
-# Install root utility dependencies
+# Root utilities
 npm install
 
-# Install server dependencies
+# Backend
 cd server
 npm install
 cd ..
 
-# Install client dependencies
+# Frontend
 cd client
 npm install
 cd ..
@@ -152,21 +127,18 @@ cd ..
 
 ## Running the Application
 
-After the setup is complete, you can start both the frontend and backend servers simultaneously from the root project folder using a single command:
+To start both backend and frontend development servers concurrently:
 
 ```bash
 npm run dev
 ```
 
-This will automatically launch:
-- **Backend API Server** on `http://localhost:5000`
-- **Frontend React Application** on `http://localhost:5173`
+- **Backend API Server**: `http://localhost:5000`
+- **Frontend React Application**: `http://localhost:5173`
 
-*(Alternatively, you can run them in separate terminals by running `npm run server` in one window and `npm run client` in another).*
+---
 
-Open your browser and navigate to **`http://localhost:5173`** to view the application!
-
-## Key Features & Evaluation Highlights
+## Features & System Highlights
 
 1. **Dashboard (`/`)**:
    - Aggregate metric cards: total criminals, total officers, average convict age (32.83), incarcerated count, court assigned count, and investigation status breakdown.
@@ -183,7 +155,8 @@ Open your browser and navigate to **`http://localhost:5173`** to view the applic
 
 3. **Criminal Profile Dossier (`/criminals/:id`)**:
    - Individual case dossier showing joined personal details, officer card, judicial docket, and incarceration status.
-   - Case progression timeline (conditionally rendered only if timeline events exist).
+   - Mugshot photo viewer with upload drawer and thumbnail rendering.
+   - Case progression timeline.
 
 4. **Police Officers Roster (`/police`) & Profile (`/police/:id`)**:
    - Roster table with caseload counts, age validation (21-65), and add/edit drawer.
@@ -192,16 +165,16 @@ Open your browser and navigate to **`http://localhost:5173`** to view the applic
 
 5. **Court Records Docket (`/court-records`)**:
    - Judicial room mapping table.
-   - Assign modal with dropdown **restricted to unassigned criminals only**.
+   - Assign modal with dropdown restricted to unassigned criminals only.
    - Room reassignment and deletion.
 
 6. **Jail Incarceration (`/jail`)**:
    - Prison registry with "All Inmates" table and "Group by Facility" view.
-   - Incarceration modal with dropdown **restricted to unassigned criminals only**.
+   - Incarceration modal with dropdown restricted to unassigned criminals only.
    - Edit and release (delete) actions.
 
-7. **Query Explorer (`/queries`) — Viva Mode**:
-   - Shows all **10 report queries** categorized into Joins (1-3), Aggregates (4-7), and Subqueries (8-10):
+7. **Query Explorer (`/queries`)**:
+   - Implements **10 benchmark queries** categorized into Joins (1-3), Aggregates (4-7), and Subqueries (8-10):
      1. Criminal + Investigating Officer (`INNER JOIN`)
      2. Criminal + Court Room (`INNER JOIN`)
      3. Criminal + Jail Info (`INNER JOIN`)
@@ -229,112 +202,52 @@ Open your browser and navigate to **`http://localhost:5173`** to view the applic
 
 ## Authentication & Role-Based Access Control (RBAC)
 
-The system includes a complete authentication flow using **bcrypt** (cost 12) for password hashing and **JWT** stored in secure, `httpOnly`, `SameSite=Lax` cookies.
+Complete authentication flow using **bcrypt** (cost 12) for password hashing and **JWT** stored in secure, `httpOnly`, `SameSite=Lax` cookies.
 
 ### User Roles
 - **Admin**: Full access. Can create, edit, and delete records, run custom SQL in the console, view the Audit Log, and manage users.
 - **Viewer**: Read-only access. Can view tables, profiles, and run saved queries in the Query Explorer, but cannot modify any data or access the free-form SQL console. Viewer profiles also have sensitive fields like police phone numbers and addresses permanently redacted.
 
 ### Security Features
-- **Rate Limiting**: 5 failed login attempts per 15 minutes per IP + username returns a `429 Too Many Requests`.
-- **Timing Attack Resistance**: Uses a constant-time `bcrypt.compare` even when a username does not exist.
+- **Rate Limiting**: 5 failed login attempts per 15 minutes per IP + username returns `429 Too Many Requests`.
+- **Timing Attack Resistance**: Uses constant-time `bcrypt.compare` even when a username does not exist.
 - **CSRF Protection**: State-changing API requests require an `X-Requested-With` header.
-- **Helmet**: Secures Express apps by setting various HTTP headers.
+- **Helmet**: Secures Express apps with hardened HTTP headers.
 - **Audit Logging**: Every login, failed login, logout, create, update, delete, and custom SQL run is recorded securely in the database. Passwords are never logged.
 
-### Environment Variables
-Ensure the following variables are present in `server/.env`:
-```env
-JWT_SECRET=your_secure_random_jwt_secret_key
-CLIENT_URL=http://localhost:5173
-NODE_ENV=development
-```
-
-### Demo Credentials
-The `seed.sql` creates two initial accounts:
+### Default Accounts
+The `seed.sql` script creates two initial accounts:
 
 | Role | Username | Password |
 | :--- | :--- | :--- |
 | **Admin** | `admin` | `admin123` |
 | **Viewer** | `viewer` | `viewer123` |
 
-> *Note: Please change these passwords upon first login via the user menu in the top right.*
-
-### Creating Users Script
-An admin can manage users via the `/users` dashboard. Alternatively, you can generate bcrypt hashes or seed users via the provided script:
-```bash
-cd server
-node scripts/create-user.js <username> <password> <role>
-```
-
 ---
 
-## Criminal Photo Upload & Preview Deployment (`feature/criminal-photos`)
+## Criminal Photo Upload & Storage Architecture
 
-This branch introduces binary mugshot identification photo management for criminal records, optimized for Vercel Serverless and TiDB Cloud.
+Mugshot identification photo management for criminal records, optimized for MySQL/TiDB and serverless deployment.
 
-### Architecture & Capabilities
+### Capabilities & Design
 1. **BLOB Database Storage**:
-   - Vercel serverless execution is read-only and ephemeral. Photos are stored directly in TiDB / MySQL as binary data (`MEDIUMBLOB` for compressed full photo, `BLOB` for 160x160 thumbnail).
-   - Deleting a criminal automatically cascades to remove the corresponding photo record (`ON DELETE CASCADE`).
-   - Query efficiency: `photo_data` and `thumb_data` BLOB columns are **never** selected in list or join queries. The list and dossier detail endpoints only `LEFT JOIN CRIMINAL_PHOTO` for `has_photo` and `photo_updated_at`.
+   - Mugshots and thumbnails are stored directly in MySQL/TiDB as binary data (`MEDIUMBLOB` for compressed full photo, `BLOB` for 160x160 thumbnail).
+   - Deleting a criminal record cascades to automatically remove the associated photo (`ON DELETE CASCADE`).
+   - Query efficiency: `photo_data` and `thumb_data` BLOB columns are omitted from list and table queries to conserve bandwidth.
 2. **Processing Pipeline**:
-   - `multer` memory storage with a strict 4 MB limit on field `photo`.
-   - Magic byte verification using `file-type` (permits only JPEG, PNG, WebP; strictly rejects SVG, GIF, PDF, HTML, or disguised files).
-   - Server-side compression via `sharp`: strips all metadata/EXIF/GPS, auto-rotates, fits within 600x600 WebP at quality stepping (80 -> 70 -> 60 -> 50) guaranteeing `<= 150 KB`. Generates a 160x160 cover-cropped WebP thumbnail `<= 15 KB`.
-   - Client-side pre-compression: draws to canvas (max 800px on longest side, quality 0.8 WebP/JPEG) ensuring uploads are well under 1 MB.
-3. **Role-Based Access Control**:
-   - **Admin**: Can upload, change, and delete mugshot photos.
-   - **Viewer**: Read-only access to view served photos and thumbnails. Upload/delete controls are hidden and return `403 Forbidden` if accessed directly. Unauthenticated requests return `401 Unauthorized`.
-4. **Caching & Cache-Busting**:
-   - Full photo and thumbnail endpoints set `Cache-Control: private, max-age=300`, `X-Content-Type-Options: nosniff`, and custom ETags (`photo_id + uploaded_at`). Honors `If-None-Match` with `304 Not Modified`.
-   - Client URLs include cache-busting query strings `?v=<photo_updated_at>`.
-
-### New Environment Variables
-
-Add to your environment configuration as needed:
-
-| Variable | Default | Description |
-| :--- | :--- | :--- |
-| `DB_SSL` | `false` | Set to `true` to enable TLS in mysql2 (`{ minVersion: 'TLSv1.2', rejectUnauthorized: true }`) for TiDB Cloud. Local MySQL works when unset. |
-| `DB_CONNECTION_LIMIT` | `2` | Connection pool limit for serverless instances (module-scoped pool reuse). |
-
-### Database Migration
-
-To apply the photo storage table to an existing database:
-```bash
-# Production / Local manual migration:
-mysql -u <user> -p <db_name> < db/migrations/002_criminal_photo.sql
-```
-
-### Preview Deployment with TiDB Cloud
-
-Vercel Preview deployments use a dedicated, isolated TiDB database (e.g. `criminal_records_preview`) via Preview-scoped environment variables.
-
-1. Create a local, gitignored `.env.preview` file:
-   ```env
-   DB_HOST=gateway01.ap-southeast-1.prod.aws.tidbcloud.com
-   DB_PORT=4000
-   DB_USER=xxxx.root
-   DB_PASSWORD=your_preview_password
-   DB_NAME=criminal_records_preview
-   DB_SSL=true
-   ```
-2. Run the automated preview migration script:
-   ```bash
-   ./db/apply-preview.sh
-   ```
-   This script runs built-in safety checks (refuses to run if the database target resembles production), and applies the following in order:
-   - `db/schema.sql`
-   - `db/seed.sql`
-   - `db/migrations/001_users_audit_log.sql`
-   - `db/migrations/002_criminal_photo.sql`
+   - `multer` memory storage with a 4 MB upload limit.
+   - Magic byte verification using `file-type` (permits only JPEG, PNG, WebP; rejects disguised file formats).
+   - Compression via `sharp`: strips EXIF/GPS metadata, auto-rotates, and resizes to 600x600 WebP (`<= 150 KB`). Generates a 160x160 cropped WebP thumbnail (`<= 15 KB`).
+   - Client-side pre-compression: draws to canvas before upload to minimize network payload.
+3. **Role-Based Controls**:
+   - **Admin**: Can upload, update, and delete mugshot photos.
+   - **Viewer**: Read-only access to view served mugshots and thumbnails.
 
 ---
 
-## Responsive Behavior & Mobile/Tablet Optimization (`feature/responsive`)
+## Responsive Design & Mobile/Tablet Support
 
-The Criminal Record Management System provides a fully adaptive, mobile-first design supporting screens down to 320px width without horizontal viewport scrolling or clipped functionality.
+The application includes an adaptive, mobile-first interface supporting viewports from 320px width up to high-resolution desktop monitors.
 
 ### 1. Viewport Breakpoints
 - **Mobile (< 768px)**:
@@ -354,23 +267,19 @@ The Criminal Record Management System provides a fully adaptive, mobile-first de
 
 ### 2. Collapsible Navigation Sidebar
 - **Mobile (< 768px)**: Off-canvas drawer opened via Topbar hamburger button or edge gestures. Features backdrop overlay, auto-closing on route navigation, `Escape` key handling, focus trap, and body scroll lock.
-- **Tablet (768px – 1023px)**: Default 64px icon rail. Tapping the expand trigger reveals the navigation labels as an overlay positioned above the main content without layout thrashing. Closes on backdrop tap or `Escape`.
-- **Desktop (>= 1024px)**: Full 240px sidebar collapsible to a 64px icon rail. State toggles with smooth 200ms width transition and persists across page reloads via `localStorage` (`crms_sidebar_expanded`).
+- **Tablet (768px – 1023px)**: Default 64px icon rail. Tapping the expand trigger reveals navigation labels as an overlay positioned above main content without layout reflow. Closes on backdrop tap or `Escape`.
+- **Desktop (>= 1024px)**: Full 240px sidebar collapsible to a 64px icon rail. State toggles with a 200ms width transition and persists across page reloads via `localStorage`.
 
 ### 3. Touch Targets & Accessibility
 - All interactive controls (buttons, inputs, selects, tab triggers, modal dismissals) adhere to a minimum `44px x 44px` touch target size (`min-h-[44px]`).
-- Form inputs disable iOS auto-zoom via `text-base sm:text-sm` (16px base font size on touch screens).
-- WCAG AA color contrast and ARIA landmarks verified across all pages (Lighthouse Accessibility score >= 90).
+- Form inputs prevent mobile auto-zoom via `text-base sm:text-sm` (16px base font size on touch screens).
+- Color contrast meets WCAG AA standards.
 
-### 4. Running Responsive Playwright Tests
+### 4. Automated UI & Responsive Tests
 The automated test suite runs 18 tests across 7 viewports (`320x640`, `360x740`, `390x844`, `768x1024`, `820x1180`, `1024x768`, and `1280x800`) for Admin and Viewer roles. It validates zero horizontal overflow, zero console errors, gesture handling, sidebar state persistence, and drawer focus trap.
 
 ```bash
-# Ensure local dev servers are running (ports 5000 and 5173)
-npm run dev
-
-# In another terminal, run responsive tests:
+# Run automated responsive tests:
 cd client
 npm run test:responsive
 ```
-

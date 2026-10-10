@@ -14,7 +14,7 @@ const routeTitles: Record<string, string> = {
   '/police': 'Investigating Officers Service Roster',
   '/court-records': 'Judicial Court Room Docket',
   '/jail': 'Correctional Detention & Sentencing Log',
-  '/queries': 'SQL Query Explorer & Evaluation Console',
+  '/queries': 'SQL Query Explorer & Execution Console',
   '/schema': 'Relational Architecture & Entity Model',
   '/users': 'Personnel Directory & Access Control',
   '/audit-log': 'System Security & Audit Journal',

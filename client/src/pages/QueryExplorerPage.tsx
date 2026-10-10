@@ -112,7 +112,7 @@ export const QueryExplorerPage: React.FC = () => {
         <div>
           <div className="flex items-center gap-2">
             <h2 className="font-typewriter text-base font-bold text-[#1F1F1F] dark:text-[#E2DFD8] uppercase tracking-wider">
-              SQL QUERY EXPLORER & EVALUATION CONSOLE
+              SQL QUERY EXPLORER & EXECUTION CONSOLE
             </h2>
             <span className="px-2 py-0.5 rounded-xs font-typewriter text-[11px] font-bold bg-[#E6DFCD] dark:bg-[#2C303A] text-[#B3261E] dark:text-red-400">
               10 REPORT BENCHMARKS
