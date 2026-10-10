@@ -8,17 +8,21 @@
     "server": "cd server && npm run dev",
     "client": "cd client && npm run dev",
     "start": "cd server && npm start",
-    "build": "npm --prefix client install && npm --prefix client run build",
-    "vercel-build": "npm --prefix client install && npm --prefix client run build",
+    "install-all": "npm --prefix server install && npm --prefix client install",
+    "build": "npm --prefix client run build",
     "setup:db": "mysql -u root -p < db/schema.sql && mysql -u root -p < db/seed.sql"
   },
-  "keywords": [
-    "dbms",
-    "criminal-record-management",
-    "mysql",
-    "react",
-    "express"
-  ],
-  "author": "",
-  "license": "ISC"
+  "dependencies": {
+    "bcrypt": "^5.1.1",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "helmet": "^8.0.0",
+    "jsonwebtoken": "^9.0.2",
+    "mysql2": "^3.12.0"
+  },
+  "devDependencies": {
+    "vite": "^5.4.2"
+  }
 }
