@@ -458,7 +458,7 @@ export const JailPage: React.FC = () => {
               value={assignForm.location}
               onChange={(e) => setAssignForm({ ...assignForm, location: e.target.value })}
               placeholder="e.g. Arthur Road Jail, Taloja Jail, Yerwada Jail"
-              className="w-full h-8 px-2.5 bg-[#EFE9DC] dark:bg-[#16181C] border border-[#D9D0BE] dark:border-[#2E323B] rounded-xs text-[#1F1F1F] dark:text-[#E2DFD8] focus:outline-none"
+              className="w-full min-h-[44px] px-3 text-base sm:text-xs bg-[#EFE9DC] dark:bg-[#16181C] border border-[#D9D0BE] dark:border-[#2E323B] rounded-xs text-[#1F1F1F] dark:text-[#E2DFD8] focus:outline-none focus:ring-1 focus:ring-[#B08D3C]"
             />
           </div>
 
@@ -474,7 +474,7 @@ export const JailPage: React.FC = () => {
               <select
                 value={assignForm.criminal_id}
                 onChange={(e) => setAssignForm({ ...assignForm, criminal_id: e.target.value })}
-                className="w-full h-8 px-2 bg-[#EFE9DC] dark:bg-[#16181C] border border-[#D9D0BE] dark:border-[#2E323B] rounded-xs text-[#1F1F1F] dark:text-[#E2DFD8] focus:outline-none"
+                className="w-full min-h-[44px] px-3 text-base sm:text-xs bg-[#EFE9DC] dark:bg-[#16181C] border border-[#D9D0BE] dark:border-[#2E323B] rounded-xs text-[#1F1F1F] dark:text-[#E2DFD8] focus:outline-none focus:ring-1 focus:ring-[#B08D3C]"
               >
                 {unassignedCriminals.map((c) => (
                   <option key={c.criminal_id} value={c.criminal_id}>
@@ -494,7 +494,7 @@ export const JailPage: React.FC = () => {
               value={assignForm.barrack_number}
               onChange={(e) => setAssignForm({ ...assignForm, barrack_number: e.target.value })}
               placeholder="e.g. b10, b12"
-              className="w-full h-8 px-2.5 font-mono bg-[#EFE9DC] dark:bg-[#16181C] border border-[#D9D0BE] dark:border-[#2E323B] rounded-xs text-[#1F1F1F] dark:text-[#E2DFD8] focus:outline-none"
+              className="w-full min-h-[44px] px-3 font-mono text-base sm:text-xs bg-[#EFE9DC] dark:bg-[#16181C] border border-[#D9D0BE] dark:border-[#2E323B] rounded-xs text-[#1F1F1F] dark:text-[#E2DFD8] focus:outline-none focus:ring-1 focus:ring-[#B08D3C]"
             />
           </div>
 
@@ -507,7 +507,7 @@ export const JailPage: React.FC = () => {
               value={assignForm.sentence}
               onChange={(e) => setAssignForm({ ...assignForm, sentence: e.target.value })}
               placeholder="e.g. 5 Years, 3 Years, Life"
-              className="w-full h-8 px-2.5 bg-[#EFE9DC] dark:bg-[#16181C] border border-[#D9D0BE] dark:border-[#2E323B] rounded-xs text-[#1F1F1F] dark:text-[#E2DFD8] focus:outline-none"
+              className="w-full min-h-[44px] px-3 text-base sm:text-xs bg-[#EFE9DC] dark:bg-[#16181C] border border-[#D9D0BE] dark:border-[#2E323B] rounded-xs text-[#1F1F1F] dark:text-[#E2DFD8] focus:outline-none focus:ring-1 focus:ring-[#B08D3C]"
             />
           </div>
 
@@ -515,14 +515,14 @@ export const JailPage: React.FC = () => {
             <button
               type="button"
               onClick={() => setIsAssignModalOpen(false)}
-              className="px-3 py-1.5 border border-[#D9D0BE] dark:border-[#2E323B] rounded-xs text-[#1F1F1F] dark:text-[#E2DFD8] hover:bg-[#EFE9DC]"
+              className="min-h-[44px] px-4 border border-[#D9D0BE] dark:border-[#2E323B] rounded-xs text-[#1F1F1F] dark:text-[#E2DFD8] hover:bg-[#EFE9DC] font-typewriter text-xs"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={unassignedCriminals.length === 0 || isSubmitting}
-              className="px-3 py-1.5 bg-[#1F2D3D] text-[#EFE9DC] hover:bg-[#141D27] rounded-xs font-bold disabled:opacity-50 shadow-paper"
+              className="min-h-[44px] px-4 bg-[#1F2D3D] text-[#EFE9DC] hover:bg-[#141D27] rounded-xs font-bold disabled:opacity-50 shadow-paper font-typewriter text-xs"
             >
               {isSubmitting ? 'Committing...' : 'Committ Inmate'}
             </button>
@@ -547,7 +547,7 @@ export const JailPage: React.FC = () => {
               type="text"
               value={editForm.location}
               onChange={(e) => setEditForm({ ...editForm, location: e.target.value })}
-              className="w-full h-8 px-2.5 bg-[#EFE9DC] dark:bg-[#16181C] border border-[#D9D0BE] dark:border-[#2E323B] rounded-xs text-[#1F1F1F] dark:text-[#E2DFD8] focus:outline-none"
+              className="w-full min-h-[44px] px-3 text-base sm:text-xs bg-[#EFE9DC] dark:bg-[#16181C] border border-[#D9D0BE] dark:border-[#2E323B] rounded-xs text-[#1F1F1F] dark:text-[#E2DFD8] focus:outline-none focus:ring-1 focus:ring-[#B08D3C]"
             />
           </div>
 
@@ -559,7 +559,7 @@ export const JailPage: React.FC = () => {
               type="text"
               value={editForm.barrack_number}
               onChange={(e) => setEditForm({ ...editForm, barrack_number: e.target.value })}
-              className="w-full h-8 px-2.5 font-mono bg-[#EFE9DC] dark:bg-[#16181C] border border-[#D9D0BE] dark:border-[#2E323B] rounded-xs text-[#1F1F1F] dark:text-[#E2DFD8] focus:outline-none"
+              className="w-full min-h-[44px] px-3 font-mono text-base sm:text-xs bg-[#EFE9DC] dark:bg-[#16181C] border border-[#D9D0BE] dark:border-[#2E323B] rounded-xs text-[#1F1F1F] dark:text-[#E2DFD8] focus:outline-none focus:ring-1 focus:ring-[#B08D3C]"
             />
           </div>
 
@@ -571,7 +571,7 @@ export const JailPage: React.FC = () => {
               type="text"
               value={editForm.sentence}
               onChange={(e) => setEditForm({ ...editForm, sentence: e.target.value })}
-              className="w-full h-8 px-2.5 bg-[#EFE9DC] dark:bg-[#16181C] border border-[#D9D0BE] dark:border-[#2E323B] rounded-xs text-[#1F1F1F] dark:text-[#E2DFD8] focus:outline-none"
+              className="w-full min-h-[44px] px-3 text-base sm:text-xs bg-[#EFE9DC] dark:bg-[#16181C] border border-[#D9D0BE] dark:border-[#2E323B] rounded-xs text-[#1F1F1F] dark:text-[#E2DFD8] focus:outline-none focus:ring-1 focus:ring-[#B08D3C]"
             />
           </div>
 
@@ -579,14 +579,14 @@ export const JailPage: React.FC = () => {
             <button
               type="button"
               onClick={() => setIsEditModalOpen(false)}
-              className="px-3 py-1.5 border border-[#D9D0BE] dark:border-[#2E323B] rounded-xs text-[#1F1F1F] dark:text-[#E2DFD8] hover:bg-[#EFE9DC]"
+              className="min-h-[44px] px-4 border border-[#D9D0BE] dark:border-[#2E323B] rounded-xs text-[#1F1F1F] dark:text-[#E2DFD8] hover:bg-[#EFE9DC] font-typewriter text-xs"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={isSubmitting}
-              className="px-3 py-1.5 bg-[#1F2D3D] text-[#EFE9DC] hover:bg-[#141D27] rounded-xs font-bold disabled:opacity-50 shadow-paper"
+              className="min-h-[44px] px-4 bg-[#1F2D3D] text-[#EFE9DC] hover:bg-[#141D27] rounded-xs font-bold disabled:opacity-50 shadow-paper font-typewriter text-xs"
             >
               {isSubmitting ? 'Saving...' : 'Save Changes'}
             </button>

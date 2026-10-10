@@ -351,10 +351,12 @@ export const CourtRecordsPage: React.FC = () => {
             </label>
             <input
               type="number"
+              inputMode="numeric"
+              min="1"
               value={newRoomNumber}
               onChange={(e) => setNewRoomNumber(e.target.value)}
               placeholder="e.g. 6"
-              className="w-full h-8 px-2.5 font-mono bg-[#EFE9DC] dark:bg-[#16181C] border border-[#D9D0BE] dark:border-[#2E323B] rounded-xs text-[#1F1F1F] dark:text-[#E2DFD8] focus:outline-none"
+              className="w-full min-h-[44px] px-3 font-mono text-base sm:text-xs bg-[#EFE9DC] dark:bg-[#16181C] border border-[#D9D0BE] dark:border-[#2E323B] rounded-xs text-[#1F1F1F] dark:text-[#E2DFD8] focus:outline-none focus:ring-1 focus:ring-[#B08D3C]"
             />
           </div>
 
@@ -370,7 +372,7 @@ export const CourtRecordsPage: React.FC = () => {
               <select
                 value={selectedCriminalId}
                 onChange={(e) => setSelectedCriminalId(e.target.value)}
-                className="w-full h-8 px-2 bg-[#EFE9DC] dark:bg-[#16181C] border border-[#D9D0BE] dark:border-[#2E323B] rounded-xs text-[#1F1F1F] dark:text-[#E2DFD8] focus:outline-none"
+                className="w-full min-h-[44px] px-3 text-base sm:text-xs bg-[#EFE9DC] dark:bg-[#16181C] border border-[#D9D0BE] dark:border-[#2E323B] rounded-xs text-[#1F1F1F] dark:text-[#E2DFD8] focus:outline-none focus:ring-1 focus:ring-[#B08D3C]"
               >
                 {unassignedCriminals.map((c) => (
                   <option key={c.criminal_id} value={c.criminal_id}>
@@ -385,14 +387,14 @@ export const CourtRecordsPage: React.FC = () => {
             <button
               type="button"
               onClick={() => setIsAssignModalOpen(false)}
-              className="px-3 py-1.5 border border-[#D9D0BE] dark:border-[#2E323B] rounded-xs text-[#1F1F1F] dark:text-[#E2DFD8] hover:bg-[#EFE9DC]"
+              className="min-h-[44px] px-4 border border-[#D9D0BE] dark:border-[#2E323B] rounded-xs text-[#1F1F1F] dark:text-[#E2DFD8] hover:bg-[#EFE9DC] font-typewriter text-xs"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={unassignedCriminals.length === 0 || isSubmitting}
-              className="px-3 py-1.5 bg-[#1F2D3D] text-[#EFE9DC] hover:bg-[#141D27] rounded-xs font-bold disabled:opacity-50 shadow-paper"
+              className="min-h-[44px] px-4 bg-[#1F2D3D] text-[#EFE9DC] hover:bg-[#141D27] rounded-xs font-bold disabled:opacity-50 shadow-paper font-typewriter text-xs"
             >
               {isSubmitting ? 'Assigning...' : 'Assign Chamber'}
             </button>
@@ -416,7 +418,7 @@ export const CourtRecordsPage: React.FC = () => {
             <select
               value={reassignCriminalId}
               onChange={(e) => setReassignCriminalId(e.target.value)}
-              className="w-full h-8 px-2 bg-[#EFE9DC] dark:bg-[#16181C] border border-[#D9D0BE] dark:border-[#2E323B] rounded-xs text-[#1F1F1F] dark:text-[#E2DFD8] focus:outline-none"
+              className="w-full min-h-[44px] px-3 text-base sm:text-xs bg-[#EFE9DC] dark:bg-[#16181C] border border-[#D9D0BE] dark:border-[#2E323B] rounded-xs text-[#1F1F1F] dark:text-[#E2DFD8] focus:outline-none focus:ring-1 focus:ring-[#B08D3C]"
             >
               {unassignedCriminals.map((c) => (
                 <option key={c.criminal_id} value={c.criminal_id}>
@@ -431,14 +433,14 @@ export const CourtRecordsPage: React.FC = () => {
             <button
               type="button"
               onClick={() => setIsReassignModalOpen(false)}
-              className="px-3 py-1.5 border border-[#D9D0BE] dark:border-[#2E323B] rounded-xs text-[#1F1F1F] dark:text-[#E2DFD8] hover:bg-[#EFE9DC]"
+              className="min-h-[44px] px-4 border border-[#D9D0BE] dark:border-[#2E323B] rounded-xs text-[#1F1F1F] dark:text-[#E2DFD8] hover:bg-[#EFE9DC] font-typewriter text-xs"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={isSubmitting}
-              className="px-3 py-1.5 bg-[#1F2D3D] text-[#EFE9DC] hover:bg-[#141D27] rounded-xs font-bold disabled:opacity-50 shadow-paper"
+              className="min-h-[44px] px-4 bg-[#1F2D3D] text-[#EFE9DC] hover:bg-[#141D27] rounded-xs font-bold disabled:opacity-50 shadow-paper font-typewriter text-xs"
             >
               {isSubmitting ? 'Updating...' : 'Save Reassignment'}
             </button>

@@ -519,11 +519,13 @@ export const PolicePage: React.FC = () => {
             </label>
             <input
               type="number"
+              inputMode="numeric"
+              min="1"
               value={formData.police_id}
               disabled={!!editingOfficer}
               onChange={(e) => setFormData({ ...formData, police_id: e.target.value })}
               placeholder="e.g. 106"
-              className={`w-full h-8 px-2.5 font-mono bg-[#EFE9DC] dark:bg-[#16181C] border rounded-xs text-[#1F1F1F] dark:text-[#E2DFD8] disabled:opacity-60 focus:outline-none ${
+              className={`w-full min-h-[44px] px-3 font-mono text-base sm:text-xs bg-[#EFE9DC] dark:bg-[#16181C] border rounded-xs text-[#1F1F1F] dark:text-[#E2DFD8] disabled:opacity-60 focus:outline-none focus:ring-1 focus:ring-[#B08D3C] ${
                 formErrors.police_id ? 'border-[#B3261E]' : 'border-[#D9D0BE] dark:border-[#2E323B]'
               }`}
             />
@@ -539,10 +541,11 @@ export const PolicePage: React.FC = () => {
             </label>
             <input
               type="text"
+              autoComplete="name"
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
               placeholder="Officer name"
-              className={`w-full h-8 px-2.5 bg-[#EFE9DC] dark:bg-[#16181C] border rounded-xs text-[#1F1F1F] dark:text-[#E2DFD8] focus:outline-none ${
+              className={`w-full min-h-[44px] px-3 text-base sm:text-xs bg-[#EFE9DC] dark:bg-[#16181C] border rounded-xs text-[#1F1F1F] dark:text-[#E2DFD8] focus:outline-none focus:ring-1 focus:ring-[#B08D3C] ${
                 formErrors.name ? 'border-[#B3261E]' : 'border-[#D9D0BE] dark:border-[#2E323B]'
               }`}
             />
@@ -561,7 +564,7 @@ export const PolicePage: React.FC = () => {
               value={formData.rank}
               onChange={(e) => setFormData({ ...formData, rank: e.target.value })}
               placeholder="e.g. Inspector, Sub Inspector, ACP"
-              className={`w-full h-8 px-2.5 bg-[#EFE9DC] dark:bg-[#16181C] border rounded-xs text-[#1F1F1F] dark:text-[#E2DFD8] focus:outline-none ${
+              className={`w-full min-h-[44px] px-3 text-base sm:text-xs bg-[#EFE9DC] dark:bg-[#16181C] border rounded-xs text-[#1F1F1F] dark:text-[#E2DFD8] focus:outline-none focus:ring-1 focus:ring-[#B08D3C] ${
                 formErrors.rank ? 'border-[#B3261E]' : 'border-[#D9D0BE] dark:border-[#2E323B]'
               }`}
             />
@@ -580,7 +583,7 @@ export const PolicePage: React.FC = () => {
               value={formData.branch}
               onChange={(e) => setFormData({ ...formData, branch: e.target.value })}
               placeholder="e.g. Crime Branch, Cyber Crime, Traffic Branch"
-              className={`w-full h-8 px-2.5 bg-[#EFE9DC] dark:bg-[#16181C] border rounded-xs text-[#1F1F1F] dark:text-[#E2DFD8] focus:outline-none ${
+              className={`w-full min-h-[44px] px-3 text-base sm:text-xs bg-[#EFE9DC] dark:bg-[#16181C] border rounded-xs text-[#1F1F1F] dark:text-[#E2DFD8] focus:outline-none focus:ring-1 focus:ring-[#B08D3C] ${
                 formErrors.branch ? 'border-[#B3261E]' : 'border-[#D9D0BE] dark:border-[#2E323B]'
               }`}
             />
@@ -596,10 +599,13 @@ export const PolicePage: React.FC = () => {
             </label>
             <input
               type="number"
+              inputMode="numeric"
+              min="21"
+              max="65"
               value={formData.age}
               onChange={(e) => setFormData({ ...formData, age: e.target.value })}
               placeholder="e.g. 42"
-              className={`w-full h-8 px-2.5 font-mono bg-[#EFE9DC] dark:bg-[#16181C] border rounded-xs text-[#1F1F1F] dark:text-[#E2DFD8] focus:outline-none ${
+              className={`w-full min-h-[44px] px-3 font-mono text-base sm:text-xs bg-[#EFE9DC] dark:bg-[#16181C] border rounded-xs text-[#1F1F1F] dark:text-[#E2DFD8] focus:outline-none focus:ring-1 focus:ring-[#B08D3C] ${
                 formErrors.age ? 'border-[#B3261E]' : 'border-[#D9D0BE] dark:border-[#2E323B]'
               }`}
             />
@@ -614,11 +620,13 @@ export const PolicePage: React.FC = () => {
               Official Contact Phone <span className="text-[#B3261E]">*</span>
             </label>
             <input
-              type="text"
+              type="tel"
+              inputMode="tel"
+              autoComplete="tel"
               value={formData.number}
               onChange={(e) => setFormData({ ...formData, number: e.target.value })}
               placeholder="e.g. 9820112345"
-              className={`w-full h-8 px-2.5 font-mono bg-[#EFE9DC] dark:bg-[#16181C] border rounded-xs text-[#1F1F1F] dark:text-[#E2DFD8] focus:outline-none ${
+              className={`w-full min-h-[44px] px-3 font-mono text-base sm:text-xs bg-[#EFE9DC] dark:bg-[#16181C] border rounded-xs text-[#1F1F1F] dark:text-[#E2DFD8] focus:outline-none focus:ring-1 focus:ring-[#B08D3C] ${
                 formErrors.number ? 'border-[#B3261E]' : 'border-[#D9D0BE] dark:border-[#2E323B]'
               }`}
             />
@@ -637,7 +645,7 @@ export const PolicePage: React.FC = () => {
               value={formData.address}
               onChange={(e) => setFormData({ ...formData, address: e.target.value })}
               placeholder="e.g. Dadar Police Quarters, Mumbai"
-              className={`w-full h-8 px-2.5 bg-[#EFE9DC] dark:bg-[#16181C] border rounded-xs text-[#1F1F1F] dark:text-[#E2DFD8] focus:outline-none ${
+              className={`w-full min-h-[44px] px-3 text-base sm:text-xs bg-[#EFE9DC] dark:bg-[#16181C] border rounded-xs text-[#1F1F1F] dark:text-[#E2DFD8] focus:outline-none focus:ring-1 focus:ring-[#B08D3C] ${
                 formErrors.address ? 'border-[#B3261E]' : 'border-[#D9D0BE] dark:border-[#2E323B]'
               }`}
             />
@@ -651,14 +659,14 @@ export const PolicePage: React.FC = () => {
               type="button"
               onClick={() => setIsDrawerOpen(false)}
               disabled={isSubmitting}
-              className="px-3 py-1.5 border border-[#D9D0BE] dark:border-[#2E323B] rounded-xs text-[#1F1F1F] dark:text-[#E2DFD8] hover:bg-[#EFE9DC] disabled:opacity-50"
+              className="min-h-[44px] px-4 border border-[#D9D0BE] dark:border-[#2E323B] rounded-xs text-[#1F1F1F] dark:text-[#E2DFD8] hover:bg-[#EFE9DC] disabled:opacity-50 font-typewriter text-xs"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={isSubmitting}
-              className="px-3 py-1.5 bg-[#1F2D3D] text-[#EFE9DC] hover:bg-[#141D27] rounded-xs font-bold disabled:opacity-50 shadow-paper"
+              className="min-h-[44px] px-4 bg-[#1F2D3D] text-[#EFE9DC] hover:bg-[#141D27] rounded-xs font-bold disabled:opacity-50 shadow-paper font-typewriter text-xs"
             >
               {isSubmitting ? 'Recording...' : editingOfficer ? 'Save Changes' : 'Appoint Officer'}
             </button>

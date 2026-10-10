@@ -19,6 +19,11 @@ export const Modal: React.FC<ModalProps> = ({
   children,
   maxWidth = 'max-w-lg',
 }) => {
+  const reduceMotion =
+    typeof window !== 'undefined' &&
+    (window.matchMedia('(prefers-reduced-motion: reduce)').matches ||
+      document.documentElement.classList.contains('reduce-motion'));
+
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && isOpen) {
@@ -44,44 +49,44 @@ export const Modal: React.FC<ModalProps> = ({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.15 }}
-            className="fixed inset-0 bg-black/60"
+            transition={{ duration: reduceMotion ? 0 : 0.15 }}
+            className="fixed inset-0 bg-black/60 backdrop-blur-[1px]"
             onClick={onClose}
             aria-hidden="true"
           />
 
-          <div className="flex min-h-full items-center justify-center p-4">
+          <div className="flex min-h-full items-center justify-center p-2.5 sm:p-4 pb-safe">
             <motion.div
-              initial={{ scale: 0.95, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.95, opacity: 0 }}
-              transition={{ duration: 0.18, ease: 'easeOut' }}
-              className={`relative w-full ${maxWidth} bg-[#F6F0E0] dark:bg-[#1F2228] border-2 border-[#B08D3C] rounded-xs shadow-2xl overflow-hidden`}
+              initial={reduceMotion ? { opacity: 0 } : { scale: 0.95, opacity: 0 }}
+              animate={reduceMotion ? { opacity: 1 } : { scale: 1, opacity: 1 }}
+              exit={reduceMotion ? { opacity: 0 } : { scale: 0.95, opacity: 0 }}
+              transition={{ duration: reduceMotion ? 0 : 0.18, ease: 'easeOut' }}
+              className={`relative w-full min-w-0 max-w-[min(100%,calc(100vw-1rem))] sm:${maxWidth} bg-[#F6F0E0] dark:bg-[#1F2228] border-2 border-[#B08D3C] rounded-xs shadow-2xl overflow-hidden`}
               role="dialog"
               aria-modal="true"
               aria-labelledby="modal-title"
             >
               {/* Header */}
-              <div className="flex items-center justify-between px-5 py-3.5 border-b border-[#D9D0BE] dark:border-[#2E323B] bg-[#E6DFCD] dark:bg-[#1A1C20]">
-                <div>
-                  <h3 id="modal-title" className="font-typewriter text-sm font-bold text-[#1F1F1F] dark:text-[#E2DFD8] uppercase tracking-wider">
+              <div className="flex items-center justify-between px-4 py-3 sm:px-5 sm:py-3.5 border-b border-[#D9D0BE] dark:border-[#2E323B] bg-[#E6DFCD] dark:bg-[#1A1C20]">
+                <div className="min-w-0 pr-2">
+                  <h3 id="modal-title" className="font-typewriter text-xs sm:text-sm font-bold text-[#1F1F1F] dark:text-[#E2DFD8] uppercase tracking-wider truncate">
                     {title}
                   </h3>
                   {subtitle && (
-                    <p className="font-typewriter text-[11px] text-[#7A7A7A] mt-0.5">{subtitle}</p>
+                    <p className="font-typewriter text-[10px] sm:text-[11px] text-[#7A7A7A] mt-0.5 truncate">{subtitle}</p>
                   )}
                 </div>
                 <button
                   onClick={onClose}
-                  className="p-1 rounded-xs text-[#7A7A7A] hover:text-[#1F1F1F] dark:hover:text-white hover:bg-[#D9D0BE] dark:hover:bg-[#2E323B]"
+                  className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-xs text-[#7A7A7A] hover:text-[#1F1F1F] dark:hover:text-white hover:bg-[#D9D0BE] dark:hover:bg-[#2E323B] shrink-0"
                   aria-label="Close dialog"
                 >
-                  <X size={16} />
+                  <X size={18} />
                 </button>
               </div>
 
               {/* Body */}
-              <div className="p-5">{children}</div>
+              <div className="p-4 sm:p-5 overflow-y-auto max-h-[calc(100dvh-120px)]">{children}</div>
             </motion.div>
           </div>
         </div>

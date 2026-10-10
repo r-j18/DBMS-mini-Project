@@ -822,11 +822,13 @@ export const CriminalsPage: React.FC = () => {
             </label>
             <input
               type="number"
+              inputMode="numeric"
+              min="1"
               value={formData.criminal_id}
               disabled={!!editingCriminal}
               onChange={(e) => setFormData({ ...formData, criminal_id: e.target.value })}
               placeholder="e.g. 207"
-              className={`w-full h-8 px-2.5 font-mono bg-[#EFE9DC] dark:bg-[#16181C] border rounded-xs text-[#1F1F1F] dark:text-[#E2DFD8] disabled:opacity-60 focus:outline-none ${
+              className={`w-full min-h-[44px] px-3 font-mono text-base sm:text-xs bg-[#EFE9DC] dark:bg-[#16181C] border rounded-xs text-[#1F1F1F] dark:text-[#E2DFD8] disabled:opacity-60 focus:outline-none focus:ring-1 focus:ring-[#B08D3C] ${
                 formErrors.criminal_id ? 'border-[#B3261E]' : 'border-[#D9D0BE] dark:border-[#2E323B]'
               }`}
             />
@@ -842,10 +844,11 @@ export const CriminalsPage: React.FC = () => {
             </label>
             <input
               type="text"
+              autoComplete="off"
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
               placeholder="Full name"
-              className={`w-full h-8 px-2.5 bg-[#EFE9DC] dark:bg-[#16181C] border rounded-xs text-[#1F1F1F] dark:text-[#E2DFD8] focus:outline-none ${
+              className={`w-full min-h-[44px] px-3 text-base sm:text-xs bg-[#EFE9DC] dark:bg-[#16181C] border rounded-xs text-[#1F1F1F] dark:text-[#E2DFD8] focus:outline-none focus:ring-1 focus:ring-[#B08D3C] ${
                 formErrors.name ? 'border-[#B3261E]' : 'border-[#D9D0BE] dark:border-[#2E323B]'
               }`}
             />
@@ -861,10 +864,13 @@ export const CriminalsPage: React.FC = () => {
             </label>
             <input
               type="number"
+              inputMode="numeric"
+              min="18"
+              max="100"
               value={formData.age}
               onChange={(e) => setFormData({ ...formData, age: e.target.value })}
               placeholder="e.g. 32"
-              className={`w-full h-8 px-2.5 font-mono bg-[#EFE9DC] dark:bg-[#16181C] border rounded-xs text-[#1F1F1F] dark:text-[#E2DFD8] focus:outline-none ${
+              className={`w-full min-h-[44px] px-3 font-mono text-base sm:text-xs bg-[#EFE9DC] dark:bg-[#16181C] border rounded-xs text-[#1F1F1F] dark:text-[#E2DFD8] focus:outline-none focus:ring-1 focus:ring-[#B08D3C] ${
                 formErrors.age ? 'border-[#B3261E]' : 'border-[#D9D0BE] dark:border-[#2E323B]'
               }`}
             />
@@ -883,7 +889,7 @@ export const CriminalsPage: React.FC = () => {
               value={formData.crime}
               onChange={(e) => setFormData({ ...formData, crime: e.target.value })}
               placeholder="e.g. Robbery, Theft, Cyber Fraud"
-              className={`w-full h-8 px-2.5 bg-[#EFE9DC] dark:bg-[#16181C] border rounded-xs text-[#1F1F1F] dark:text-[#E2DFD8] focus:outline-none ${
+              className={`w-full min-h-[44px] px-3 text-base sm:text-xs bg-[#EFE9DC] dark:bg-[#16181C] border rounded-xs text-[#1F1F1F] dark:text-[#E2DFD8] focus:outline-none focus:ring-1 focus:ring-[#B08D3C] ${
                 formErrors.crime ? 'border-[#B3261E]' : 'border-[#D9D0BE] dark:border-[#2E323B]'
               }`}
             />
@@ -900,7 +906,7 @@ export const CriminalsPage: React.FC = () => {
             <select
               value={formData.investigating_officer}
               onChange={(e) => setFormData({ ...formData, investigating_officer: e.target.value })}
-              className={`w-full h-8 px-2 bg-[#EFE9DC] dark:bg-[#16181C] border rounded-xs text-[#1F1F1F] dark:text-[#E2DFD8] focus:outline-none ${
+              className={`w-full min-h-[44px] px-3 text-base sm:text-xs bg-[#EFE9DC] dark:bg-[#16181C] border rounded-xs text-[#1F1F1F] dark:text-[#E2DFD8] focus:outline-none focus:ring-1 focus:ring-[#B08D3C] ${
                 formErrors.investigating_officer ? 'border-[#B3261E]' : 'border-[#D9D0BE] dark:border-[#2E323B]'
               }`}
             >
@@ -929,7 +935,7 @@ export const CriminalsPage: React.FC = () => {
                   investigation_status: e.target.value as any,
                 })
               }
-              className="w-full h-8 px-2 bg-[#EFE9DC] dark:bg-[#16181C] border border-[#D9D0BE] dark:border-[#2E323B] rounded-xs text-[#1F1F1F] dark:text-[#E2DFD8] focus:outline-none"
+              className="w-full min-h-[44px] px-3 text-base sm:text-xs bg-[#EFE9DC] dark:bg-[#16181C] border border-[#D9D0BE] dark:border-[#2E323B] rounded-xs text-[#1F1F1F] dark:text-[#E2DFD8] focus:outline-none focus:ring-1 focus:ring-[#B08D3C]"
             >
               <option value="Open">Open</option>
               <option value="Under Investigation">Under Investigation</option>
@@ -973,7 +979,7 @@ export const CriminalsPage: React.FC = () => {
                 type="button"
                 onClick={handleRetryPhoto}
                 disabled={isSubmitting}
-                className="px-3 py-1.5 bg-amber-700 hover:bg-amber-800 text-white font-typewriter text-xs font-bold rounded-xs shadow-xs"
+                className="min-h-[44px] px-3.5 bg-amber-700 hover:bg-amber-800 text-white font-typewriter text-xs font-bold rounded-xs shadow-xs"
               >
                 Retry Photo Upload
               </button>
@@ -985,14 +991,14 @@ export const CriminalsPage: React.FC = () => {
               type="button"
               onClick={() => setIsDrawerOpen(false)}
               disabled={isSubmitting}
-              className="px-3 py-1.5 border border-[#D9D0BE] dark:border-[#2E323B] rounded-xs text-[#1F1F1F] dark:text-[#E2DFD8] hover:bg-[#EFE9DC] disabled:opacity-50"
+              className="min-h-[44px] px-4 border border-[#D9D0BE] dark:border-[#2E323B] rounded-xs text-[#1F1F1F] dark:text-[#E2DFD8] hover:bg-[#EFE9DC] disabled:opacity-50 font-typewriter text-xs"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={isSubmitting}
-              className="px-3 py-1.5 bg-[#1F2D3D] text-[#EFE9DC] hover:bg-[#141D27] rounded-xs font-bold disabled:opacity-50 shadow-paper"
+              className="min-h-[44px] px-4 bg-[#1F2D3D] text-[#EFE9DC] hover:bg-[#141D27] rounded-xs font-bold disabled:opacity-50 shadow-paper font-typewriter text-xs"
             >
               {isSubmitting ? 'Recording...' : editingCriminal ? 'Save Changes' : 'File Case'}
             </button>

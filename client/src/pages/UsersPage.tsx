@@ -497,10 +497,11 @@ export const UsersPage: React.FC = () => {
               </label>
               <input
                 type="text"
+                autoComplete="username"
                 value={formData.username}
                 onChange={(e) => setFormData({ ...formData, username: e.target.value })}
                 placeholder="e.g. officer_deshmukh"
-                className="w-full px-3 py-1.5 bg-[#FAF7F0] dark:bg-[#1A1C1F] border border-[#D8D2C2] dark:border-[#383C45] rounded-xs font-typewriter text-xs text-[#1F1F1F] dark:text-[#E2DFD8] focus:outline-none focus:border-[#B08D3C]"
+                className="w-full min-h-[44px] px-3 bg-[#FAF7F0] dark:bg-[#1A1C1F] border border-[#D8D2C2] dark:border-[#383C45] rounded-xs font-typewriter text-base sm:text-xs text-[#1F1F1F] dark:text-[#E2DFD8] focus:outline-none focus:border-[#B08D3C]"
               />
               {formErrors.username && (
                 <p className="text-[11px] text-[#B3261E] font-mono">{formErrors.username}</p>
@@ -514,10 +515,11 @@ export const UsersPage: React.FC = () => {
             </label>
             <input
               type="text"
+              autoComplete="name"
               value={formData.full_name}
               onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
               placeholder="e.g. Rajesh S. Deshmukh"
-              className="w-full px-3 py-1.5 bg-[#FAF7F0] dark:bg-[#1A1C1F] border border-[#D8D2C2] dark:border-[#383C45] rounded-xs font-typewriter text-xs text-[#1F1F1F] dark:text-[#E2DFD8] focus:outline-none focus:border-[#B08D3C]"
+              className="w-full min-h-[44px] px-3 bg-[#FAF7F0] dark:bg-[#1A1C1F] border border-[#D8D2C2] dark:border-[#383C45] rounded-xs font-typewriter text-base sm:text-xs text-[#1F1F1F] dark:text-[#E2DFD8] focus:outline-none focus:border-[#B08D3C]"
             />
             {formErrors.full_name && (
               <p className="text-[11px] text-[#B3261E] font-mono">{formErrors.full_name}</p>
@@ -531,7 +533,7 @@ export const UsersPage: React.FC = () => {
             <select
               value={formData.role}
               onChange={(e) => setFormData({ ...formData, role: e.target.value as any })}
-              className="w-full px-3 py-1.5 bg-[#FAF7F0] dark:bg-[#1A1C1F] border border-[#D8D2C2] dark:border-[#383C45] rounded-xs font-typewriter text-xs text-[#1F1F1F] dark:text-[#E2DFD8] focus:outline-none focus:border-[#B08D3C]"
+              className="w-full min-h-[44px] px-3 bg-[#FAF7F0] dark:bg-[#1A1C1F] border border-[#D8D2C2] dark:border-[#383C45] rounded-xs font-typewriter text-base sm:text-xs text-[#1F1F1F] dark:text-[#E2DFD8] focus:outline-none focus:border-[#B08D3C]"
             >
               <option value="viewer">VIEWER — Read-Only Dossier Access & Reports</option>
               <option value="admin">ADMIN — Full CRUD, Console, & User Management</option>
@@ -545,10 +547,11 @@ export const UsersPage: React.FC = () => {
               </label>
               <input
                 type="password"
+                autoComplete="new-password"
                 value={formData.password}
                 onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                 placeholder="At least 8 characters"
-                className="w-full px-3 py-1.5 bg-[#FAF7F0] dark:bg-[#1A1C1F] border border-[#D8D2C2] dark:border-[#383C45] rounded-xs font-typewriter text-xs text-[#1F1F1F] dark:text-[#E2DFD8] focus:outline-none focus:border-[#B08D3C]"
+                className="w-full min-h-[44px] px-3 bg-[#FAF7F0] dark:bg-[#1A1C1F] border border-[#D8D2C2] dark:border-[#383C45] rounded-xs font-typewriter text-base sm:text-xs text-[#1F1F1F] dark:text-[#E2DFD8] focus:outline-none focus:border-[#B08D3C]"
               />
               {formErrors.password && (
                 <p className="text-[11px] text-[#B3261E] font-mono">{formErrors.password}</p>
@@ -560,14 +563,14 @@ export const UsersPage: React.FC = () => {
             <button
               type="button"
               onClick={() => setIsDrawerOpen(false)}
-              className="px-3 py-1.5 border border-[#D8D2C2] dark:border-[#383C45] rounded-xs text-xs font-typewriter text-[#7A7A7A] hover:bg-[#EFE9DC] dark:hover:bg-[#252830]"
+              className="min-h-[44px] px-4 border border-[#D8D2C2] dark:border-[#383C45] rounded-xs text-xs font-typewriter text-[#7A7A7A] hover:bg-[#EFE9DC] dark:hover:bg-[#252830]"
             >
               CANCEL
             </button>
             <button
               type="submit"
               disabled={isSubmitting}
-              className="px-4 py-1.5 bg-[#1F2D3D] hover:bg-[#141D27] text-[#EFE9DC] font-typewriter text-xs font-bold rounded-xs flex items-center gap-1.5 shadow-xs transition-fast disabled:opacity-50"
+              className="min-h-[44px] px-4 bg-[#1F2D3D] hover:bg-[#141D27] text-[#EFE9DC] font-typewriter text-xs font-bold rounded-xs flex items-center gap-1.5 shadow-xs transition-fast disabled:opacity-50"
             >
               <span>{editingUser ? 'SAVE ACCOUNT CHANGES' : 'CREATE ACCOUNT'}</span>
             </button>
@@ -585,8 +588,6 @@ export const UsersPage: React.FC = () => {
           statusTarget?.is_active ? 'deactivate' : 'reactivate'
         } user "${statusTarget?.username}"? Deactivated users are rejected immediately from all operational endpoints.`}
         confirmText={statusTarget?.is_active ? 'DEACTIVATE ACCOUNT' : 'REACTIVATE ACCOUNT'}
-        
-        
       />
 
       {/* Reset Password Modal */}
@@ -594,7 +595,6 @@ export const UsersPage: React.FC = () => {
         isOpen={Boolean(passwordTarget)}
         onClose={() => setPasswordTarget(null)}
         title={`RESET PASSCODE // ${passwordTarget?.username}`}
-        
       >
         <form onSubmit={handleResetPassword} className="space-y-4">
           {passwordError && (
@@ -609,10 +609,11 @@ export const UsersPage: React.FC = () => {
             </label>
             <input
               type="password"
+              autoComplete="new-password"
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
               placeholder="Enter at least 8 characters"
-              className="w-full px-3 py-1.5 bg-[#FAF7F0] dark:bg-[#1A1C1F] border border-[#D8D2C2] dark:border-[#383C45] rounded-xs font-typewriter text-xs text-[#1F1F1F] dark:text-[#E2DFD8] focus:outline-none focus:border-[#B08D3C]"
+              className="w-full min-h-[44px] px-3 bg-[#FAF7F0] dark:bg-[#1A1C1F] border border-[#D8D2C2] dark:border-[#383C45] rounded-xs font-typewriter text-base sm:text-xs text-[#1F1F1F] dark:text-[#E2DFD8] focus:outline-none focus:border-[#B08D3C]"
               autoFocus
             />
           </div>
@@ -621,14 +622,14 @@ export const UsersPage: React.FC = () => {
             <button
               type="button"
               onClick={() => setPasswordTarget(null)}
-              className="px-3 py-1.5 border border-[#D8D2C2] dark:border-[#383C45] rounded-xs text-xs font-typewriter text-[#7A7A7A]"
+              className="min-h-[44px] px-4 border border-[#D8D2C2] dark:border-[#383C45] rounded-xs text-xs font-typewriter text-[#7A7A7A]"
             >
               CANCEL
             </button>
             <button
               type="submit"
               disabled={isResettingPassword}
-              className="px-4 py-1.5 bg-[#1F2D3D] hover:bg-[#141D27] text-[#EFE9DC] font-typewriter text-xs font-bold rounded-xs"
+              className="min-h-[44px] px-4 bg-[#1F2D3D] hover:bg-[#141D27] text-[#EFE9DC] font-typewriter text-xs font-bold rounded-xs"
             >
               CONFIRM RESET
             </button>
