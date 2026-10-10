@@ -527,12 +527,18 @@ export const CaseBoard: React.FC<CaseBoardProps> = ({
               return (
                 <motion.div
                   key={`crm-${crm.criminal_id}`}
+                  data-testid="criminal-node"
                   drag
                   dragMomentum={false}
                   onDrag={(_, info) =>
                     handleDragNode(`crm-${crm.criminal_id}`, info.delta.x, info.delta.y)
                   }
                   onDragEnd={handleDragEnd}
+                  onTap={() => {
+                    setSelectedCriminalId((prev) =>
+                      prev === crm.criminal_id ? null : crm.criminal_id
+                    );
+                  }}
                   onClick={(e) => {
                     e.stopPropagation();
                     setSelectedCriminalId((prev) =>
@@ -945,7 +951,7 @@ export const CaseBoard: React.FC<CaseBoardProps> = ({
 
       {/* Mobile Filters Bottom Sheet */}
       {isMobile && showFiltersSheet && (
-        <div className="fixed inset-0 z-50 select-none" role="dialog" aria-modal="true" aria-label="Filter case board">
+        <div className="fixed inset-0 z-50 select-none" role="dialog" aria-modal="true" aria-label="Filter Case Board">
           <div
             className="fixed inset-0 bg-black/60"
             onClick={() => setShowFiltersSheet(false)}

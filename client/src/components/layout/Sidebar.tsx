@@ -423,7 +423,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       className={`${
         desktopExpanded ? 'w-60' : 'w-16'
       } bg-[#1F2D3D] text-[#EFE9DC] border-r border-[#141D27] flex flex-col shrink-0 select-none z-30 shadow-md h-full transition-[width] duration-200 ease-in-out`}
-      aria-label="Bureau navigation"
+      aria-label="Main sidebar navigation"
     >
       {/* Brand Header */}
       <div
