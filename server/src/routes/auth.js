@@ -112,7 +112,7 @@ router.post('/login', async (req, res) => {
     res.cookie('crm_token', token, {
       httpOnly: true,
       sameSite: 'lax',
-      secure: process.env.NODE_ENV === 'production',
+      secure: process.env.NODE_ENV === 'production' || Boolean(process.env.VERCEL),
       maxAge: 8 * 60 * 60 * 1000, // 8 hours
     });
 
@@ -154,7 +154,7 @@ router.post('/logout', async (req, res) => {
     res.clearCookie('crm_token', {
       httpOnly: true,
       sameSite: 'lax',
-      secure: process.env.NODE_ENV === 'production',
+      secure: process.env.NODE_ENV === 'production' || Boolean(process.env.VERCEL),
     });
 
     res.json({ success: true, message: 'Logged out successfully' });

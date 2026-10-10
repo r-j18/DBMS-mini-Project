@@ -1,6 +1,9 @@
 node_modules
 dist
 .env
+.env.preview*
+.env*.local
 .DS_Store
 *.log
 scratch/
+test-images/

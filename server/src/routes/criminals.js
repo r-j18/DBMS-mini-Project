@@ -1,9 +1,31 @@
 import { Router } from 'express';
+import multer from 'multer';
+import { fileTypeFromBuffer } from 'file-type';
+import sharp from 'sharp';
 import { pool } from '../config/db.js';
 import { requireRole } from '../middleware/auth.js';
 import { logAudit } from '../services/auditService.js';
 
 const router = Router();
+
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: {
+    fileSize: 4 * 1024 * 1024, // 4 MB hard limit
+  },
+});
+
+function handlePhotoUpload(req, res, next) {
+  upload.single('photo')(req, res, (err) => {
+    if (err) {
+      if (err instanceof multer.MulterError && err.code === 'LIMIT_FILE_SIZE') {
+        return res.status(413).json({ error: 'File size exceeds maximum limit of 4 MB' });
+      }
+      return res.status(400).json({ error: err.message || 'File upload error' });
+    }
+    next();
+  });
+}
 
 // GET /api/criminals - List criminals with LEFT JOINs to POLICE, COURT_RECORD, JAIL
 router.get('/', async (req, res) => {
@@ -99,11 +121,14 @@ router.get('/', async (req, res) => {
       SELECT c.criminal_id, c.name, c.age, c.crime, c.investigating_officer, c.investigation_status,
              p.name AS officer_name, p.\`rank\` AS officer_rank, p.branch AS officer_branch,
              cr.court_room_number,
-             j.location AS jail_location, j.barrack_number, j.sentence
+             j.location AS jail_location, j.barrack_number, j.sentence,
+             IF(cp.photo_id IS NOT NULL, TRUE, FALSE) AS has_photo,
+             cp.uploaded_at AS photo_updated_at
       FROM CRIMINAL c
       LEFT JOIN POLICE p ON c.investigating_officer = p.police_id
       LEFT JOIN COURT_RECORD cr ON c.criminal_id = cr.criminal_id
       LEFT JOIN JAIL j ON c.criminal_id = j.criminal_id
+      LEFT JOIN CRIMINAL_PHOTO cp ON c.criminal_id = cp.criminal_id
       ${whereClause}
       ORDER BY ${sortColumn} ${direction}
       LIMIT ? OFFSET ?
@@ -111,8 +136,14 @@ router.get('/', async (req, res) => {
 
     const [rows] = await pool.query(dataSql, [...params, limitNum, offset]);
 
+    const formattedRows = rows.map((row) => ({
+      ...row,
+      has_photo: Boolean(row.has_photo),
+      photo_updated_at: row.photo_updated_at ? new Date(row.photo_updated_at).toISOString() : null,
+    }));
+
     res.json({
-      data: rows,
+      data: formattedRows,
       pagination: {
         page: pageNum,
         limit: limitNum,
@@ -139,11 +170,14 @@ router.get('/:id', async (req, res) => {
              p.police_id, p.\`rank\` AS officer_rank, p.name AS officer_name, p.branch AS officer_branch,
              p.number AS officer_number, p.address AS officer_address,
              cr.court_room_number,
-             j.location AS jail_location, j.barrack_number, j.sentence
+             j.location AS jail_location, j.barrack_number, j.sentence,
+             IF(cp.photo_id IS NOT NULL, TRUE, FALSE) AS has_photo,
+             cp.uploaded_at AS photo_updated_at
       FROM CRIMINAL c
       LEFT JOIN POLICE p ON c.investigating_officer = p.police_id
       LEFT JOIN COURT_RECORD cr ON c.criminal_id = cr.criminal_id
       LEFT JOIN JAIL j ON c.criminal_id = j.criminal_id
+      LEFT JOIN CRIMINAL_PHOTO cp ON c.criminal_id = cp.criminal_id
       WHERE c.criminal_id = ?
     `;
 
@@ -188,6 +222,8 @@ router.get('/:id', async (req, res) => {
         age: record.age,
         crime: record.crime,
         investigation_status: record.investigation_status,
+        has_photo: Boolean(record.has_photo),
+        photo_updated_at: record.photo_updated_at ? new Date(record.photo_updated_at).toISOString() : null,
       },
       officer: record.police_id ? {
         police_id: record.police_id,
@@ -391,4 +427,255 @@ router.delete('/:id', requireRole('admin'), async (req, res) => {
   }
 });
 
+// ==========================================
+// PHOTO ENDPOINTS (BLOB Storage in TiDB / MySQL)
+// ==========================================
+
+// GET /api/criminals/:id/photo - Serve full mugshot photo (all authenticated users)
+router.get('/:id/photo', async (req, res) => {
+  try {
+    const criminalId = parseInt(req.params.id, 10);
+    if (isNaN(criminalId) || criminalId <= 0) {
+      return res.status(400).json({ error: 'Valid Criminal ID is required' });
+    }
+
+    const [rows] = await pool.query(
+      'SELECT photo_id, photo_data, mime_type, uploaded_at FROM CRIMINAL_PHOTO WHERE criminal_id = ?',
+      [criminalId]
+    );
+
+    if (rows.length === 0 || !rows[0].photo_data) {
+      return res.status(404).json({ error: 'Photo not found for this criminal record' });
+    }
+
+    const { photo_id, photo_data, mime_type, uploaded_at } = rows[0];
+    const timestamp = new Date(uploaded_at).getTime();
+    const etag = `"photo-${photo_id}-${timestamp}"`;
+
+    if (req.headers['if-none-match'] === etag) {
+      return res.status(304).end();
+    }
+
+    res.set({
+      'Content-Type': mime_type || 'image/webp',
+      'X-Content-Type-Options': 'nosniff',
+      'ETag': etag,
+      'Cache-Control': 'private, max-age=300',
+    });
+
+    res.send(photo_data);
+  } catch (err) {
+    console.error('Error fetching criminal photo:', err);
+    res.status(500).json({ error: 'Failed to fetch criminal photo' });
+  }
+});
+
+// GET /api/criminals/:id/photo/thumb - Serve 160x160 thumbnail (all authenticated users)
+router.get('/:id/photo/thumb', async (req, res) => {
+  try {
+    const criminalId = parseInt(req.params.id, 10);
+    if (isNaN(criminalId) || criminalId <= 0) {
+      return res.status(400).json({ error: 'Valid Criminal ID is required' });
+    }
+
+    const [rows] = await pool.query(
+      'SELECT photo_id, thumb_data, mime_type, uploaded_at FROM CRIMINAL_PHOTO WHERE criminal_id = ?',
+      [criminalId]
+    );
+
+    if (rows.length === 0 || !rows[0].thumb_data) {
+      return res.status(404).json({ error: 'Thumbnail not found for this criminal record' });
+    }
+
+    const { photo_id, thumb_data, mime_type, uploaded_at } = rows[0];
+    const timestamp = new Date(uploaded_at).getTime();
+    const etag = `"thumb-${photo_id}-${timestamp}"`;
+
+    if (req.headers['if-none-match'] === etag) {
+      return res.status(304).end();
+    }
+
+    res.set({
+      'Content-Type': mime_type || 'image/webp',
+      'X-Content-Type-Options': 'nosniff',
+      'ETag': etag,
+      'Cache-Control': 'private, max-age=300',
+    });
+
+    res.send(thumb_data);
+  } catch (err) {
+    console.error('Error fetching criminal thumbnail:', err);
+    res.status(500).json({ error: 'Failed to fetch criminal thumbnail' });
+  }
+});
+
+// POST /api/criminals/:id/photo - Upload / Replace photo (Admin only)
+router.post('/:id/photo', requireRole('admin'), handlePhotoUpload, async (req, res) => {
+  try {
+    const criminalId = parseInt(req.params.id, 10);
+    if (isNaN(criminalId) || criminalId <= 0) {
+      return res.status(400).json({ error: 'Valid Criminal ID is required' });
+    }
+
+    if (!req.file || !req.file.buffer) {
+      return res.status(400).json({ error: 'No photo provided. Please upload an image using field "photo".' });
+    }
+
+    // 1. Validate magic bytes using file-type (reject SVG, GIF, PDF, HTML, renamed files)
+    const detected = await fileTypeFromBuffer(req.file.buffer);
+    const allowedMimes = ['image/jpeg', 'image/png', 'image/webp'];
+
+    if (!detected || !allowedMimes.includes(detected.mime)) {
+      return res.status(415).json({
+        error: `Unsupported image format. Allowed formats: JPEG, PNG, WebP (detected: ${detected ? detected.mime : 'unrecognized/corrupt'}).`,
+      });
+    }
+
+    // 2. Verify criminal exists (404 if criminal does not exist)
+    const [criminalRows] = await pool.query('SELECT criminal_id FROM CRIMINAL WHERE criminal_id = ?', [criminalId]);
+    if (criminalRows.length === 0) {
+      return res.status(404).json({ error: 'Criminal record not found' });
+    }
+
+    // 3. Process with sharp:
+    // - auto-rotate from EXIF
+    // - strip ALL metadata (EXIF/GPS)
+    // - fit within 600x600
+    // - encode to WebP
+    // - start at quality 80 and step down (70, 60, 50) until photo_data is <= 150 KB
+    const qualities = [80, 70, 60, 50];
+    let photoData = null;
+
+    for (const q of qualities) {
+      const candidate = await sharp(req.file.buffer)
+        .rotate()
+        .resize(600, 600, { fit: 'inside', withoutEnlargement: true })
+        .webp({ quality: q })
+        .toBuffer();
+
+      if (candidate.length <= 150 * 1024) {
+        photoData = candidate;
+        break;
+      }
+    }
+
+    if (!photoData) {
+      return res.status(413).json({
+        error: 'Image too large after compression (exceeds 150 KB limit at quality 50). Please select an image with less detail or smaller dimensions.',
+      });
+    }
+
+    // 4. Generate 160x160 cover-cropped WebP thumbnail, <= 15 KB
+    const thumbQualities = [80, 70, 60, 50, 40, 30, 20];
+    let thumbData = null;
+
+    for (const tq of thumbQualities) {
+      const candidateThumb = await sharp(req.file.buffer)
+        .rotate()
+        .resize(160, 160, { fit: 'cover' })
+        .webp({ quality: tq })
+        .toBuffer();
+
+      if (candidateThumb.length <= 15 * 1024) {
+        thumbData = candidateThumb;
+        break;
+      }
+    }
+
+    if (!thumbData) {
+      thumbData = await sharp(req.file.buffer)
+        .rotate()
+        .resize(160, 160, { fit: 'cover' })
+        .webp({ quality: 15 })
+        .toBuffer();
+    }
+
+    // 5. Determine whether inserting or replacing
+    const [existingPhoto] = await pool.query(
+      'SELECT photo_id FROM CRIMINAL_PHOTO WHERE criminal_id = ?',
+      [criminalId]
+    );
+    const isReplace = existingPhoto.length > 0;
+
+    // 6. Parameterized upsert
+    const upsertSql = `
+      INSERT INTO CRIMINAL_PHOTO (
+        criminal_id, photo_data, thumb_data, mime_type, size_bytes, uploaded_by, uploaded_at
+      ) VALUES (?, ?, ?, 'image/webp', ?, ?, CURRENT_TIMESTAMP)
+      ON DUPLICATE KEY UPDATE
+        photo_data = VALUES(photo_data),
+        thumb_data = VALUES(thumb_data),
+        mime_type = VALUES(mime_type),
+        size_bytes = VALUES(size_bytes),
+        uploaded_by = VALUES(uploaded_by),
+        uploaded_at = CURRENT_TIMESTAMP
+    `;
+
+    await pool.query(upsertSql, [
+      criminalId,
+      photoData,
+      thumbData,
+      photoData.length,
+      req.user.userId || null,
+    ]);
+
+    // 7. Audit log (criminal ID only, NEVER log image data)
+    await logAudit({
+      userId: req.user.userId,
+      username: req.user.username,
+      action: isReplace ? 'UPDATE' : 'CREATE',
+      tableName: 'CRIMINAL_PHOTO',
+      recordId: String(criminalId),
+      detail: isReplace
+        ? `Replaced photo for criminal #${criminalId}`
+        : `Uploaded photo for criminal #${criminalId}`,
+    });
+
+    res.status(isReplace ? 200 : 201).json({
+      message: isReplace ? 'Criminal photo replaced successfully' : 'Criminal photo uploaded successfully',
+      criminal_id: criminalId,
+      size_bytes: photoData.length,
+      mime_type: 'image/webp',
+    });
+  } catch (err) {
+    console.error('Error uploading criminal photo:', err);
+    res.status(500).json({ error: 'Failed to process and store criminal photo' });
+  }
+});
+
+// DELETE /api/criminals/:id/photo - Delete photo (Admin only)
+router.delete('/:id/photo', requireRole('admin'), async (req, res) => {
+  try {
+    const criminalId = parseInt(req.params.id, 10);
+    if (isNaN(criminalId) || criminalId <= 0) {
+      return res.status(400).json({ error: 'Valid Criminal ID is required' });
+    }
+
+    const [result] = await pool.query(
+      'DELETE FROM CRIMINAL_PHOTO WHERE criminal_id = ?',
+      [criminalId]
+    );
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ error: 'No photo found for this criminal' });
+    }
+
+    // Audit log (criminal ID only)
+    await logAudit({
+      userId: req.user.userId,
+      username: req.user.username,
+      action: 'DELETE',
+      tableName: 'CRIMINAL_PHOTO',
+      recordId: String(criminalId),
+      detail: `Deleted photo for criminal #${criminalId}`,
+    });
+
+    res.json({ message: 'Criminal photo deleted successfully' });
+  } catch (err) {
+    console.error('Error deleting criminal photo:', err);
+    res.status(500).json({ error: 'Failed to delete criminal photo' });
+  }
+});
+
 export default router;
+

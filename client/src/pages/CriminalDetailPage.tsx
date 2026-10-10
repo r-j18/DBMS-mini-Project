@@ -12,6 +12,9 @@ import {
   Calendar,
   AlertCircle,
   FileCheck2,
+  UploadCloud,
+  Trash2,
+  Loader2,
 } from 'lucide-react';
 import { api } from '../services/api';
 import { CriminalProfile } from '../types';
@@ -21,13 +24,22 @@ import { PushPin } from '../components/common/PushPin';
 import { EvidenceTag } from '../components/common/EvidenceTag';
 import { Redacted } from '../components/common/Redacted';
 import { Skeleton } from '../components/common/Skeleton';
+import { ConfirmDialog } from '../components/common/ConfirmDialog';
 import { useToast } from '../components/common/Toast';
+import { compressClientImage } from '../utils/imageCompression';
 
 export const CriminalDetailPage: React.FC = () => {
   const { role } = useAuth();
   const { id } = useParams<{ id: string }>();
   const [profile, setProfile] = useState<CriminalProfile | null>(null);
   const [loading, setLoading] = useState(true);
+
+  // Photo management state
+  const [isConfirmDeletePhotoOpen, setIsConfirmDeletePhotoOpen] = useState(false);
+  const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
+  const [isDeletingPhoto, setIsDeletingPhoto] = useState(false);
+  const [imgError, setImgError] = useState(false);
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
 
   // Typewriter effect state for header
   const [displayedTitle, setDisplayedTitle] = useState('');
@@ -46,10 +58,45 @@ export const CriminalDetailPage: React.FC = () => {
       setLoading(true);
       const data = await api.getCriminalProfile(criminalId);
       setProfile(data);
+      setImgError(false);
     } catch (err: any) {
       showToast('error', err.message || 'Failed to load criminal dossier');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !profile) return;
+    try {
+      setIsUploadingPhoto(true);
+      const compressed = await compressClientImage(file);
+      await api.uploadCriminalPhoto(profile.criminal.criminal_id, compressed.blob);
+      showToast('success', 'Mugshot photo updated successfully');
+      setImgError(false);
+      loadProfile(profile.criminal.criminal_id);
+    } catch (err: any) {
+      showToast('error', err.message || 'Failed to upload photo');
+    } finally {
+      setIsUploadingPhoto(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
+
+  const handleConfirmDeletePhoto = async () => {
+    if (!profile) return;
+    try {
+      setIsDeletingPhoto(true);
+      await api.deleteCriminalPhoto(profile.criminal.criminal_id);
+      showToast('success', 'Mugshot photo removed successfully');
+      setIsConfirmDeletePhotoOpen(false);
+      setImgError(false);
+      loadProfile(profile.criminal.criminal_id);
+    } catch (err: any) {
+      showToast('error', err.message || 'Failed to remove photo');
+    } finally {
+      setIsDeletingPhoto(false);
     }
   };
 
@@ -153,9 +200,9 @@ export const CriminalDetailPage: React.FC = () => {
             IDENTIFICATION RECORD
           </div>
 
-          {/* Mugshot frame with height ruler graphic & silhouette */}
+          {/* Mugshot frame with height ruler graphic & silhouette / real photo */}
           <div className="my-4 w-52 h-64 bg-[#E6DFCD] dark:bg-[#15171B] border-2 border-[#1F1F1F] dark:border-[#3A3F4D] rounded-xs relative flex items-end justify-center shadow-inner overflow-hidden">
-            {/* Height-chart ruler graphic behind silhouette */}
+            {/* Height-chart ruler graphic behind silhouette/photo */}
             <div className="absolute inset-y-0 left-0 w-12 border-r border-[#C5BBA6] dark:border-[#2C303A] flex flex-col justify-between py-2 text-[9px] font-mono text-[#7A6C58] select-none pl-1.5 z-0">
               <span className="border-b border-[#C5BBA6] pr-1">6'3" ──</span>
               <span className="border-b border-[#C5BBA6] pr-1">6'0" ──</span>
@@ -166,11 +213,28 @@ export const CriminalDetailPage: React.FC = () => {
               <span>4'9" ──</span>
             </div>
 
-            {/* Silhouette Graphic (No real faces, purely graphic outline) */}
-            <svg width="140" height="180" viewBox="0 0 100 120" fill="#2E2C28" className="z-10 relative">
-              <circle cx="50" cy="40" r="26" />
-              <path d="M15 115 C15 75 32 68 50 68 C68 68 85 75 85 115 Z" />
-            </svg>
+            {/* Real photo or silhouette graphic */}
+            {criminal.has_photo && !imgError ? (
+              <img
+                src={api.getCriminalPhotoUrl(criminal.criminal_id, criminal.photo_updated_at)}
+                alt={`Photo of ${criminal.name}`}
+                width={208}
+                height={256}
+                loading="lazy"
+                onError={() => setImgError(true)}
+                className="w-full h-full object-cover z-10 relative"
+              />
+            ) : (
+              <div className="relative z-10 flex flex-col items-center justify-end w-full h-full pb-8">
+                <svg width="140" height="180" viewBox="0 0 100 120" fill="#2E2C28" className="select-none">
+                  <circle cx="50" cy="40" r="26" />
+                  <path d="M15 115 C15 75 32 68 50 68 C68 68 85 75 85 115 Z" />
+                </svg>
+                <span className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 font-typewriter font-bold text-lg text-[#EFE9DC]/70 pointer-events-none">
+                  {initials}
+                </span>
+              </div>
+            )}
 
             {/* Mugshot Chalkboard Plaque */}
             <div className="absolute bottom-2 inset-x-3 bg-[#1F1F1F] text-[#EFE9DC] text-center py-1 rounded-xs border border-white/20 font-typewriter z-20 shadow-md">
@@ -181,7 +245,50 @@ export const CriminalDetailPage: React.FC = () => {
                 {criminal.name}
               </div>
             </div>
+
+            {/* Uploading Spinner Overlay */}
+            {isUploadingPhoto && (
+              <div className="absolute inset-0 bg-black/75 flex flex-col items-center justify-center text-white text-xs font-typewriter z-30">
+                <Loader2 size={24} className="animate-spin mb-2" />
+                <span>Processing Photo...</span>
+              </div>
+            )}
           </div>
+
+          {/* Admin-only Photo Controls on the Frame */}
+          {role === 'admin' && (
+            <div className="w-full flex items-center justify-center gap-2 mb-2">
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                onChange={handlePhotoUpload}
+                disabled={isUploadingPhoto || isDeletingPhoto}
+                className="hidden"
+                aria-label="Upload mugshot photo"
+              />
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={isUploadingPhoto || isDeletingPhoto}
+                className="px-2.5 py-1 text-[11px] font-typewriter font-semibold bg-[#1F2D3D] text-[#EFE9DC] hover:bg-[#141D27] rounded-xs transition-fast flex items-center gap-1.5 shadow-xs disabled:opacity-50"
+              >
+                <UploadCloud size={13} />
+                <span>{criminal.has_photo ? 'Change photo' : 'Upload photo'}</span>
+              </button>
+              {criminal.has_photo && (
+                <button
+                  type="button"
+                  onClick={() => setIsConfirmDeletePhotoOpen(true)}
+                  disabled={isUploadingPhoto || isDeletingPhoto}
+                  className="px-2.5 py-1 text-[11px] font-typewriter text-[#B3261E] hover:text-[#921E18] hover:bg-red-50 dark:hover:bg-red-950/30 border border-[#B3261E]/30 rounded-xs transition-fast flex items-center gap-1 disabled:opacity-50"
+                >
+                  <Trash2 size={12} />
+                  <span>Remove photo</span>
+                </button>
+              )}
+            </div>
+          )}
 
           {/* Evidence Tags for quick lookup */}
           <div className="w-full space-y-2 pt-2 border-t border-[#D9D0BE] dark:border-[#2E323B]">
@@ -415,6 +522,22 @@ export const CriminalDetailPage: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* Remove Photo ConfirmDialog */}
+      <ConfirmDialog
+        isOpen={isConfirmDeletePhotoOpen}
+        onClose={() => setIsConfirmDeletePhotoOpen(false)}
+        onConfirm={handleConfirmDeletePhoto}
+        title="Remove Mugshot Photo"
+        message={
+          profile
+            ? `Are you sure you want to permanently remove the identification photo for ${profile.criminal.name} (File #${profile.criminal.criminal_id})? The record will revert to the official outline silhouette.`
+            : ''
+        }
+        confirmText="Remove Photo"
+        isSubmitting={isDeletingPhoto}
+      />
     </div>
   );
 };
+

@@ -23,6 +23,8 @@ export interface Criminal {
   jail_location?: string | null;
   barrack_number?: string | null;
   sentence?: string | null;
+  has_photo?: boolean;
+  photo_updated_at?: string | null;
 }
 
 export interface CriminalProfile {
@@ -32,6 +34,8 @@ export interface CriminalProfile {
     age: number;
     crime: string;
     investigation_status: 'Open' | 'Under Investigation' | 'Closed';
+    has_photo?: boolean;
+    photo_updated_at?: string | null;
   };
   officer: {
     police_id: number;

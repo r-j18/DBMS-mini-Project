@@ -103,7 +103,7 @@ app.use((err, req, res, next) => {
   res.status(status).json({ error: err.message || 'Internal server error' });
 });
 
-if (process.env.NODE_ENV !== 'production' || process.env.VERCEL_ENV === undefined) {
+if (!process.env.VERCEL) {
   app.listen(PORT, async () => {
     console.log(`===============================================`);
     console.log(` Criminal Record Management System - Backend `);
