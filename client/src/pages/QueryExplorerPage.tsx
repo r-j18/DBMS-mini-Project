@@ -125,7 +125,7 @@ export const QueryExplorerPage: React.FC = () => {
 
         <button
           onClick={handleRunAll}
-          className="h-8 px-3 flex items-center gap-1.5 font-typewriter text-xs font-bold bg-[#1F2D3D] text-[#EFE9DC] hover:bg-[#141D27] rounded-xs transition-fast shrink-0 shadow-paper"
+          className="w-full sm:w-auto min-h-[44px] px-3.5 flex items-center justify-center gap-1.5 font-typewriter text-xs font-bold bg-[#1F2D3D] text-[#EFE9DC] hover:bg-[#141D27] rounded-xs transition-fast shrink-0 shadow-paper"
         >
           <Play size={12} fill="currentColor" />
           <span>RUN ALL 10 QUERIES</span>
@@ -133,7 +133,7 @@ export const QueryExplorerPage: React.FC = () => {
       </div>
 
       {/* Category Tabs styled like folder tabs */}
-      <div className="flex items-center gap-1.5 border-b border-[#D9D0BE] dark:border-[#2E323B] text-xs font-typewriter">
+      <div className="flex items-center gap-1.5 border-b border-[#D9D0BE] dark:border-[#2E323B] text-xs font-typewriter overflow-x-auto pb-0.5">
         {(['All', 'Joins', 'Aggregates', 'Subqueries'] as const).map((tab) => {
           const count =
             tab === 'All'
@@ -144,7 +144,7 @@ export const QueryExplorerPage: React.FC = () => {
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`px-3.5 py-1.5 font-bold rounded-t-xs border-t border-l border-r transition-fast flex items-center gap-1.5 ${
+              className={`min-h-[44px] px-3.5 py-1.5 font-bold rounded-t-xs border-t border-l border-r transition-fast flex items-center gap-1.5 shrink-0 ${
                 activeTab === tab
                   ? 'bg-[#F6F0E0] dark:bg-[#1F2228] border-[#D9D0BE] dark:border-[#2E323B] text-[#B3261E] dark:text-red-400 shadow-folder'
                   : 'bg-transparent border-transparent text-[#7A7A7A] hover:text-[#1F1F1F]'
@@ -169,9 +169,9 @@ export const QueryExplorerPage: React.FC = () => {
               className="bg-[#F6F0E0] dark:bg-[#1F2228] border border-[#D9D0BE] dark:border-[#2E323B] rounded shadow-folder p-4 space-y-3"
             >
               {/* Query Card Header */}
-              <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-2 pb-2 border-b border-[#D9D0BE] dark:border-[#2E323B]">
+              <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 pb-2 border-b border-[#D9D0BE] dark:border-[#2E323B]">
                 <div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 flex-wrap">
                     <span className="font-typewriter text-xs font-bold px-1.5 py-0.5 rounded-xs bg-[#E6DFCD] dark:bg-[#2C303A] text-[#1F1F1F] dark:text-[#E2DFD8]">
                       QUERY #{q.id}
                     </span>
@@ -198,7 +198,7 @@ export const QueryExplorerPage: React.FC = () => {
                 <button
                   onClick={() => handleRunPredefined(q.id)}
                   disabled={isRunning}
-                  className="h-7 px-3 flex items-center gap-1.5 font-typewriter text-xs font-bold bg-[#1F2D3D] text-[#EFE9DC] hover:bg-[#141D27] rounded-xs disabled:opacity-50 transition-fast shrink-0 shadow-paper"
+                  className="w-full sm:w-auto min-h-[44px] px-3.5 flex items-center justify-center gap-1.5 font-typewriter text-xs font-bold bg-[#1F2D3D] text-[#EFE9DC] hover:bg-[#141D27] rounded-xs disabled:opacity-50 transition-fast shrink-0 shadow-paper"
                 >
                   <Play size={11} fill="currentColor" />
                   <span>{isRunning ? 'RUNNING...' : 'EXECUTE'}</span>
@@ -280,14 +280,14 @@ export const QueryExplorerPage: React.FC = () => {
             </p>
           </div>
 
-          <div className="flex items-center gap-1.5 font-typewriter text-[11px]">
+          <div className="flex flex-wrap items-center gap-1.5 font-typewriter text-[11px]">
             <button
               onClick={() =>
                 setCustomSql(
                   "SELECT p.branch, COUNT(c.criminal_id) AS total_cases FROM POLICE p LEFT JOIN CRIMINAL c ON p.police_id = c.investigating_officer GROUP BY p.branch ORDER BY total_cases DESC;"
                 )
               }
-              className="px-2 py-1 border border-[#D9D0BE] dark:border-[#2E323B] rounded-xs text-[#1F1F1F] dark:text-[#E2DFD8] hover:bg-[#EFE9DC]"
+              className="min-h-[44px] sm:min-h-0 px-2.5 py-1.5 border border-[#D9D0BE] dark:border-[#2E323B] rounded-xs text-[#1F1F1F] dark:text-[#E2DFD8] hover:bg-[#EFE9DC] dark:hover:bg-[#252830]"
             >
               Cases by Branch
             </button>
@@ -297,25 +297,25 @@ export const QueryExplorerPage: React.FC = () => {
                   "SELECT crime, COUNT(*) AS count, ROUND(AVG(age), 1) AS avg_age FROM CRIMINAL GROUP BY crime ORDER BY count DESC;"
                 )
               }
-              className="px-2 py-1 border border-[#D9D0BE] dark:border-[#2E323B] rounded-xs text-[#1F1F1F] dark:text-[#E2DFD8] hover:bg-[#EFE9DC]"
+              className="min-h-[44px] sm:min-h-0 px-2.5 py-1.5 border border-[#D9D0BE] dark:border-[#2E323B] rounded-xs text-[#1F1F1F] dark:text-[#E2DFD8] hover:bg-[#EFE9DC] dark:hover:bg-[#252830]"
             >
               Crime Stats
             </button>
           </div>
         </div>
 
-        {/* Textarea on plain surface */}
+        {/* Textarea on plain surface (min 8 rows, 16px font on mobile) */}
         <div className="relative">
           <textarea
-            rows={4}
+            rows={8}
             value={customSql}
             onChange={(e) => setCustomSql(e.target.value)}
             placeholder="Type a SELECT query here (e.g. SELECT * FROM POLICE;)"
-            className="w-full p-3 font-mono text-xs bg-[#EFE9DC] dark:bg-[#16181C] border border-[#D9D0BE] dark:border-[#2E323B] rounded-xs text-[#1F1F1F] dark:text-[#E2DFD8] focus:outline-none focus:ring-1 focus:ring-[#B08D3C]"
+            className="w-full p-3 font-mono text-base sm:text-xs bg-[#EFE9DC] dark:bg-[#16181C] border border-[#D9D0BE] dark:border-[#2E323B] rounded-xs text-[#1F1F1F] dark:text-[#E2DFD8] focus:outline-none focus:ring-1 focus:ring-[#B08D3C]"
           />
         </div>
 
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <span className="text-[11px] text-[#7A7A7A] font-typewriter">
             Transaction: READ ONLY • Security: crm_readonly
           </span>
@@ -323,7 +323,7 @@ export const QueryExplorerPage: React.FC = () => {
           <button
             onClick={handleRunConsole}
             disabled={consoleRunning}
-            className="h-8 px-4 flex items-center gap-1.5 font-typewriter text-xs font-bold bg-[#1F2D3D] text-[#EFE9DC] hover:bg-[#141D27] rounded-xs disabled:opacity-50 transition-fast shadow-paper"
+            className="w-full sm:w-auto min-h-[44px] px-4 flex items-center justify-center gap-1.5 font-typewriter text-xs font-bold bg-[#1F2D3D] text-[#EFE9DC] hover:bg-[#141D27] rounded-xs disabled:opacity-50 transition-fast shadow-paper"
           >
             <Play size={12} fill="currentColor" />
             <span>{consoleRunning ? 'EXECUTING...' : 'RUN QUERY'}</span>

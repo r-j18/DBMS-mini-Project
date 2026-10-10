@@ -332,8 +332,8 @@ export const PolicePage: React.FC = () => {
 )}
       </div>
 
-      {/* Filter Bar */}
-      <div className="p-3 bg-[#F6F0E0] dark:bg-[#1F2228] border border-[#D9D0BE] dark:border-[#2E323B] rounded shadow-folder flex flex-wrap items-center gap-2 text-xs">
+      {/* Filter Bar - Desktop & Tablet */}
+      <div className="hidden sm:flex p-3 bg-[#F6F0E0] dark:bg-[#1F2228] border border-[#D9D0BE] dark:border-[#2E323B] rounded shadow-folder flex-wrap items-center gap-2 text-xs">
         <div className="flex items-center gap-1.5 font-typewriter font-bold text-[#7A7A7A] mr-1 text-[11px] uppercase">
           <Filter size={12} />
           <span>ROSTER FILTERS:</span>
@@ -380,7 +380,7 @@ export const PolicePage: React.FC = () => {
         )}
       </div>
 
-      {/* Table */}
+      {/* Table & Mobile Cards */}
       <DataTable
         data={officers}
         columns={columns}
@@ -390,6 +390,118 @@ export const PolicePage: React.FC = () => {
         pageSize={15}
         emptyTitle="No officers on file"
         emptyDescription="No registered personnel found matching filter criteria."
+        hasActiveFilters={Boolean(rankFilter || branchFilter)}
+        onResetFilters={() => {
+          setRankFilter('');
+          setBranchFilter('');
+        }}
+        filterSheetContent={
+          <div className="space-y-4 font-typewriter">
+            <div>
+              <label className="block text-[11px] font-bold text-[#7A7A7A] uppercase mb-1">Rank</label>
+              <select
+                value={rankFilter}
+                onChange={(e) => setRankFilter(e.target.value)}
+                className="w-full min-h-[44px] px-3 bg-[#EFE9DC] dark:bg-[#16181C] border border-[#D9D0BE] dark:border-[#2E323B] rounded-xs text-[#1F1F1F] dark:text-[#E2DFD8] text-base"
+              >
+                <option value="">Rank: All</option>
+                {distinctRanks.map((r) => (
+                  <option key={r} value={r}>{r}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-[11px] font-bold text-[#7A7A7A] uppercase mb-1">Division / Branch</label>
+              <select
+                value={branchFilter}
+                onChange={(e) => setBranchFilter(e.target.value)}
+                className="w-full min-h-[44px] px-3 bg-[#EFE9DC] dark:bg-[#16181C] border border-[#D9D0BE] dark:border-[#2E323B] rounded-xs text-[#1F1F1F] dark:text-[#E2DFD8] text-base"
+              >
+                <option value="">Division: All</option>
+                {distinctBranches.map((b) => (
+                  <option key={b} value={b}>{b}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+        }
+        mobileCardRenderer={(officer) => (
+          <div className="space-y-2.5">
+            <div className="flex items-start justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <div className="w-9 h-9 rounded-xs bg-[#1F2D3D] text-[#EFE9DC] flex items-center justify-center shrink-0">
+                  <Shield size={16} className="text-[#B08D3C]" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <span className="font-mono text-[#B3261E] font-bold text-xs">
+                      #{officer.police_id}
+                    </span>
+                    <span className="font-typewriter font-bold text-sm text-[#1F1F1F] dark:text-[#E2DFD8]">
+                      {officer.name}
+                    </span>
+                    <span className="font-mono text-xs text-[#7A7A7A]">
+                      ({officer.age}y)
+                    </span>
+                  </div>
+                  <div className="text-xs text-[#B08D3C] font-typewriter font-semibold">
+                    {officer.rank} • {officer.branch}
+                  </div>
+                </div>
+              </div>
+
+              <div className="text-right shrink-0">
+                <span className="text-[10px] uppercase font-bold text-[#7A7A7A] block">Cases</span>
+                <span className="font-mono text-xs font-bold px-2 py-0.5 rounded-xs bg-[#E6DFCD] dark:bg-[#2C303A] text-[#1F1F1F] dark:text-[#E2DFD8]">
+                  {officer.case_count || 0}
+                </span>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between text-xs pt-1 border-t border-[#D9D0BE]/60 dark:border-[#2E323B]/60 text-[#7A7A7A] font-typewriter">
+              <span>Tel: {officer.number || 'N/A'}</span>
+              <span className="truncate max-w-[180px]">{officer.address || 'Station Roster'}</span>
+            </div>
+
+            {/* Mobile Actions with min 44px touch targets */}
+            <div
+              className="flex items-center justify-end gap-2 pt-2 border-t border-[#D9D0BE]/60 dark:border-[#2E323B]/60"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <button
+                type="button"
+                onClick={() => navigate(`/police/${officer.police_id}`)}
+                className="min-h-[44px] px-3 flex items-center justify-center gap-1 text-xs font-typewriter font-semibold border border-[#D9D0BE] dark:border-[#2E323B] bg-[#EFE9DC] dark:bg-[#1F2228] text-[#1F1F1F] dark:text-[#E2DFD8] rounded-xs"
+                aria-label={`View dossier for ${officer.name}`}
+              >
+                <Eye size={14} className="text-[#B08D3C]" />
+                <span>DOSSIER</span>
+              </button>
+              {role === 'admin' && (
+                <>
+                  <button
+                    type="button"
+                    onClick={(e) => handleOpenEdit(officer, e)}
+                    className="min-h-[44px] px-3 flex items-center justify-center gap-1 text-xs font-typewriter font-semibold border border-[#D9D0BE] dark:border-[#2E323B] bg-[#EFE9DC] dark:bg-[#1F2228] text-[#1F1F1F] dark:text-[#E2DFD8] rounded-xs"
+                    aria-label={`Edit ${officer.name}`}
+                  >
+                    <Edit2 size={14} />
+                    <span>EDIT</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={(e) => handleOpenDelete(officer, e)}
+                    className="min-h-[44px] px-3 flex items-center justify-center gap-1 text-xs font-typewriter font-semibold border border-red-300 dark:border-red-900/60 bg-red-50 dark:bg-red-950/30 text-[#B3261E] rounded-xs"
+                    aria-label={`Delete ${officer.name}`}
+                  >
+                    <Trash2 size={14} />
+                    <span>PURGE</span>
+                  </button>
+                </>
+              )}
+            </div>
+          </div>
+        )}
       />
 
       {/* Drawer */}
@@ -407,11 +519,13 @@ export const PolicePage: React.FC = () => {
             </label>
             <input
               type="number"
+              inputMode="numeric"
+              min="1"
               value={formData.police_id}
               disabled={!!editingOfficer}
               onChange={(e) => setFormData({ ...formData, police_id: e.target.value })}
               placeholder="e.g. 106"
-              className={`w-full h-8 px-2.5 font-mono bg-[#EFE9DC] dark:bg-[#16181C] border rounded-xs text-[#1F1F1F] dark:text-[#E2DFD8] disabled:opacity-60 focus:outline-none ${
+              className={`w-full min-h-[44px] px-3 font-mono text-base sm:text-xs bg-[#EFE9DC] dark:bg-[#16181C] border rounded-xs text-[#1F1F1F] dark:text-[#E2DFD8] disabled:opacity-60 focus:outline-none focus:ring-1 focus:ring-[#B08D3C] ${
                 formErrors.police_id ? 'border-[#B3261E]' : 'border-[#D9D0BE] dark:border-[#2E323B]'
               }`}
             />
@@ -427,10 +541,11 @@ export const PolicePage: React.FC = () => {
             </label>
             <input
               type="text"
+              autoComplete="name"
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
               placeholder="Officer name"
-              className={`w-full h-8 px-2.5 bg-[#EFE9DC] dark:bg-[#16181C] border rounded-xs text-[#1F1F1F] dark:text-[#E2DFD8] focus:outline-none ${
+              className={`w-full min-h-[44px] px-3 text-base sm:text-xs bg-[#EFE9DC] dark:bg-[#16181C] border rounded-xs text-[#1F1F1F] dark:text-[#E2DFD8] focus:outline-none focus:ring-1 focus:ring-[#B08D3C] ${
                 formErrors.name ? 'border-[#B3261E]' : 'border-[#D9D0BE] dark:border-[#2E323B]'
               }`}
             />
@@ -449,7 +564,7 @@ export const PolicePage: React.FC = () => {
               value={formData.rank}
               onChange={(e) => setFormData({ ...formData, rank: e.target.value })}
               placeholder="e.g. Inspector, Sub Inspector, ACP"
-              className={`w-full h-8 px-2.5 bg-[#EFE9DC] dark:bg-[#16181C] border rounded-xs text-[#1F1F1F] dark:text-[#E2DFD8] focus:outline-none ${
+              className={`w-full min-h-[44px] px-3 text-base sm:text-xs bg-[#EFE9DC] dark:bg-[#16181C] border rounded-xs text-[#1F1F1F] dark:text-[#E2DFD8] focus:outline-none focus:ring-1 focus:ring-[#B08D3C] ${
                 formErrors.rank ? 'border-[#B3261E]' : 'border-[#D9D0BE] dark:border-[#2E323B]'
               }`}
             />
@@ -468,7 +583,7 @@ export const PolicePage: React.FC = () => {
               value={formData.branch}
               onChange={(e) => setFormData({ ...formData, branch: e.target.value })}
               placeholder="e.g. Crime Branch, Cyber Crime, Traffic Branch"
-              className={`w-full h-8 px-2.5 bg-[#EFE9DC] dark:bg-[#16181C] border rounded-xs text-[#1F1F1F] dark:text-[#E2DFD8] focus:outline-none ${
+              className={`w-full min-h-[44px] px-3 text-base sm:text-xs bg-[#EFE9DC] dark:bg-[#16181C] border rounded-xs text-[#1F1F1F] dark:text-[#E2DFD8] focus:outline-none focus:ring-1 focus:ring-[#B08D3C] ${
                 formErrors.branch ? 'border-[#B3261E]' : 'border-[#D9D0BE] dark:border-[#2E323B]'
               }`}
             />
@@ -484,10 +599,13 @@ export const PolicePage: React.FC = () => {
             </label>
             <input
               type="number"
+              inputMode="numeric"
+              min="21"
+              max="65"
               value={formData.age}
               onChange={(e) => setFormData({ ...formData, age: e.target.value })}
               placeholder="e.g. 42"
-              className={`w-full h-8 px-2.5 font-mono bg-[#EFE9DC] dark:bg-[#16181C] border rounded-xs text-[#1F1F1F] dark:text-[#E2DFD8] focus:outline-none ${
+              className={`w-full min-h-[44px] px-3 font-mono text-base sm:text-xs bg-[#EFE9DC] dark:bg-[#16181C] border rounded-xs text-[#1F1F1F] dark:text-[#E2DFD8] focus:outline-none focus:ring-1 focus:ring-[#B08D3C] ${
                 formErrors.age ? 'border-[#B3261E]' : 'border-[#D9D0BE] dark:border-[#2E323B]'
               }`}
             />
@@ -502,11 +620,13 @@ export const PolicePage: React.FC = () => {
               Official Contact Phone <span className="text-[#B3261E]">*</span>
             </label>
             <input
-              type="text"
+              type="tel"
+              inputMode="tel"
+              autoComplete="tel"
               value={formData.number}
               onChange={(e) => setFormData({ ...formData, number: e.target.value })}
               placeholder="e.g. 9820112345"
-              className={`w-full h-8 px-2.5 font-mono bg-[#EFE9DC] dark:bg-[#16181C] border rounded-xs text-[#1F1F1F] dark:text-[#E2DFD8] focus:outline-none ${
+              className={`w-full min-h-[44px] px-3 font-mono text-base sm:text-xs bg-[#EFE9DC] dark:bg-[#16181C] border rounded-xs text-[#1F1F1F] dark:text-[#E2DFD8] focus:outline-none focus:ring-1 focus:ring-[#B08D3C] ${
                 formErrors.number ? 'border-[#B3261E]' : 'border-[#D9D0BE] dark:border-[#2E323B]'
               }`}
             />
@@ -525,7 +645,7 @@ export const PolicePage: React.FC = () => {
               value={formData.address}
               onChange={(e) => setFormData({ ...formData, address: e.target.value })}
               placeholder="e.g. Dadar Police Quarters, Mumbai"
-              className={`w-full h-8 px-2.5 bg-[#EFE9DC] dark:bg-[#16181C] border rounded-xs text-[#1F1F1F] dark:text-[#E2DFD8] focus:outline-none ${
+              className={`w-full min-h-[44px] px-3 text-base sm:text-xs bg-[#EFE9DC] dark:bg-[#16181C] border rounded-xs text-[#1F1F1F] dark:text-[#E2DFD8] focus:outline-none focus:ring-1 focus:ring-[#B08D3C] ${
                 formErrors.address ? 'border-[#B3261E]' : 'border-[#D9D0BE] dark:border-[#2E323B]'
               }`}
             />
@@ -539,14 +659,14 @@ export const PolicePage: React.FC = () => {
               type="button"
               onClick={() => setIsDrawerOpen(false)}
               disabled={isSubmitting}
-              className="px-3 py-1.5 border border-[#D9D0BE] dark:border-[#2E323B] rounded-xs text-[#1F1F1F] dark:text-[#E2DFD8] hover:bg-[#EFE9DC] disabled:opacity-50"
+              className="min-h-[44px] px-4 border border-[#D9D0BE] dark:border-[#2E323B] rounded-xs text-[#1F1F1F] dark:text-[#E2DFD8] hover:bg-[#EFE9DC] disabled:opacity-50 font-typewriter text-xs"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={isSubmitting}
-              className="px-3 py-1.5 bg-[#1F2D3D] text-[#EFE9DC] hover:bg-[#141D27] rounded-xs font-bold disabled:opacity-50 shadow-paper"
+              className="min-h-[44px] px-4 bg-[#1F2D3D] text-[#EFE9DC] hover:bg-[#141D27] rounded-xs font-bold disabled:opacity-50 shadow-paper font-typewriter text-xs"
             >
               {isSubmitting ? 'Recording...' : editingOfficer ? 'Save Changes' : 'Appoint Officer'}
             </button>

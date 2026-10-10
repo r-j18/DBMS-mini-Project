@@ -85,7 +85,7 @@ export const PhotoUploadField: React.FC<PhotoUploadFieldProps> = ({
         onChange={onFileInputChange}
         disabled={disabled || isProcessing}
         className="hidden"
-        aria-label="Upload photo file"
+        aria-label="Upload photo from gallery"
       />
       <input
         ref={cameraInputRef}
@@ -95,34 +95,39 @@ export const PhotoUploadField: React.FC<PhotoUploadFieldProps> = ({
         onChange={onFileInputChange}
         disabled={disabled || isProcessing}
         className="hidden"
-        aria-label="Capture photo from camera"
+        aria-label="Take photo with camera"
       />
 
-      {/* Main Drag-and-Drop / Preview Box */}
+      {/* Main Drag-and-Drop / Large Tap Target Box */}
       <div
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
-        className={`relative border-2 border-dashed rounded p-3 transition-colors ${
+        onClick={() => {
+          if (!disabled && !isProcessing && !activeDisplayUrl) {
+            fileInputRef.current?.click();
+          }
+        }}
+        className={`relative border-2 border-dashed rounded p-3 sm:p-4 transition-colors cursor-pointer ${
           isDragging
             ? 'border-[#B3261E] bg-[#B3261E]/5'
-            : 'border-[#D9D0BE] dark:border-[#2E323B] bg-[#FAF7F0] dark:bg-[#16181C]'
-        } flex flex-col sm:flex-row items-center gap-3`}
+            : 'border-[#D9D0BE] dark:border-[#2E323B] bg-[#FAF7F0] dark:bg-[#16181C] hover:border-[#B08D3C]'
+        } flex flex-col sm:flex-row items-center gap-3.5`}
       >
         {/* Preview Frame */}
-        <div className="w-24 h-28 shrink-0 bg-[#E6DFCD] dark:bg-[#1F2228] border border-[#C5BBA6] dark:border-[#2C303A] rounded-xs relative overflow-hidden flex items-center justify-center shadow-inner">
+        <div className="w-24 h-28 sm:w-28 sm:h-32 shrink-0 bg-[#E6DFCD] dark:bg-[#1F2228] border border-[#C5BBA6] dark:border-[#2C303A] rounded-xs relative overflow-hidden flex items-center justify-center shadow-inner">
           {activeDisplayUrl ? (
             <img
               src={activeDisplayUrl}
               alt="Mugshot Preview"
-              width={96}
-              height={112}
+              width={112}
+              height={128}
               loading="lazy"
               className="w-full h-full object-cover"
             />
           ) : (
             <div className="flex flex-col items-center justify-center text-[#7A6C58] dark:text-[#A09D95] p-2 text-center">
-              <ImageIcon size={22} className="opacity-60 mb-1" />
+              <ImageIcon size={26} className="opacity-60 mb-1" />
               <span className="font-typewriter text-[9px] uppercase tracking-wider">No Photo</span>
             </div>
           )}
@@ -130,7 +135,7 @@ export const PhotoUploadField: React.FC<PhotoUploadFieldProps> = ({
           {/* Processing / Uploading Overlay */}
           {(isProcessing || uploadProgress !== null) && (
             <div className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center text-white text-[10px] font-typewriter p-1 text-center">
-              <Loader2 size={18} className="animate-spin mb-1" />
+              <Loader2 size={20} className="animate-spin mb-1" />
               <span>
                 {uploadProgress !== null ? `Uploading ${uploadProgress}%` : 'Compressing...'}
               </span>
@@ -139,33 +144,32 @@ export const PhotoUploadField: React.FC<PhotoUploadFieldProps> = ({
         </div>
 
         {/* Controls and Upload Buttons */}
-        <div className="flex-1 space-y-2 w-full text-center sm:text-left">
+        <div className="flex-1 space-y-2.5 w-full text-center sm:text-left" onClick={(e) => e.stopPropagation()}>
           <div className="text-[11px] font-typewriter text-[#7A7A7A] leading-tight">
-            Drag and drop an official mugshot here, or click to browse. Max 4 MB (JPEG, PNG, WebP).
-            Auto-compressed client-side.
+            Tap or drop an official mugshot here. JPEG, PNG, WebP up to 4 MB. Auto-compressed client-side.
           </div>
 
           <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 pt-1">
-            <button
-              type="button"
-              onClick={() => fileInputRef.current?.click()}
-              disabled={disabled || isProcessing}
-              className="px-2.5 py-1 text-xs font-typewriter font-semibold bg-[#1F2D3D] text-[#EFE9DC] hover:bg-[#141D27] rounded-xs transition-fast flex items-center gap-1.5 shadow-xs disabled:opacity-50"
-            >
-              <UploadCloud size={13} />
-              <span>Choose File</span>
-            </button>
-
-            {/* Mobile / camera capture button */}
+            {/* Take Photo button */}
             <button
               type="button"
               onClick={() => cameraInputRef.current?.click()}
               disabled={disabled || isProcessing}
-              className="px-2.5 py-1 text-xs font-typewriter border border-[#D9D0BE] dark:border-[#2E323B] bg-[#EFE9DC] dark:bg-[#1F2228] text-[#1F1F1F] dark:text-[#E2DFD8] hover:bg-[#E2DAC8] rounded-xs transition-fast flex items-center gap-1.5 shadow-xs disabled:opacity-50"
-              title="Capture from camera"
+              className="min-h-[44px] px-3.5 text-xs font-typewriter font-semibold bg-[#1F2D3D] text-[#EFE9DC] hover:bg-[#141D27] rounded-xs transition-fast flex items-center gap-1.5 shadow-xs disabled:opacity-50"
             >
-              <Camera size={13} />
-              <span>Camera</span>
+              <Camera size={15} className="text-[#B08D3C]" />
+              <span>Take Photo</span>
+            </button>
+
+            {/* Choose from gallery button */}
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={disabled || isProcessing}
+              className="min-h-[44px] px-3.5 text-xs font-typewriter border border-[#D9D0BE] dark:border-[#2E323B] bg-[#EFE9DC] dark:bg-[#1F2228] text-[#1F1F1F] dark:text-[#E2DFD8] hover:bg-[#E2DAC8] rounded-xs transition-fast flex items-center gap-1.5 shadow-xs disabled:opacity-50"
+            >
+              <UploadCloud size={15} />
+              <span>Choose from Gallery</span>
             </button>
 
             {/* Remove photo button */}
@@ -174,10 +178,10 @@ export const PhotoUploadField: React.FC<PhotoUploadFieldProps> = ({
                 type="button"
                 onClick={onPhotoRemoved}
                 disabled={disabled || isProcessing}
-                className="px-2.5 py-1 text-xs font-typewriter text-[#B3261E] hover:text-[#921E18] hover:bg-red-50 dark:hover:bg-red-950/30 border border-transparent rounded-xs transition-fast flex items-center gap-1 disabled:opacity-50"
+                className="min-h-[44px] px-3 text-xs font-typewriter text-[#B3261E] hover:text-[#921E18] hover:bg-red-50 dark:hover:bg-red-950/30 border border-transparent rounded-xs transition-fast flex items-center gap-1 disabled:opacity-50"
               >
-                <Trash2 size={12} />
-                <span>Remove photo</span>
+                <Trash2 size={14} />
+                <span>Remove</span>
               </button>
             )}
           </div>
@@ -196,7 +200,7 @@ export const PhotoUploadField: React.FC<PhotoUploadFieldProps> = ({
 
       {/* Error message banner */}
       {errorMessage && (
-        <div className="p-2 rounded bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900/50 text-[#B3261E] text-xs font-typewriter">
+        <div className="p-2.5 rounded bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900/50 text-[#B3261E] text-xs font-typewriter">
           {errorMessage}
         </div>
       )}

@@ -42,29 +42,32 @@ export const SqlBlock: React.FC<SqlBlockProps> = ({ sql, className = '' }) => {
   };
 
   return (
-    <div className={`relative group border border-slate-200 dark:border-slate-800 rounded bg-slate-50/70 dark:bg-slate-950 p-3 text-xs font-mono overflow-x-auto ${className}`}>
-      <div className="absolute right-2 top-2">
+    <div className={`relative group border border-slate-200 dark:border-slate-800 rounded bg-slate-50/70 dark:bg-slate-950 text-xs font-mono ${className}`}>
+      <div className="absolute right-2 top-2 z-10">
         <button
           onClick={handleCopy}
-          className="flex items-center gap-1 px-2 py-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:border-slate-300 dark:hover:border-slate-700 shadow-none transition-fast text-[11px]"
+          className="min-h-[36px] sm:min-h-0 flex items-center gap-1.5 px-2.5 py-1 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xs border border-slate-200 dark:border-slate-800 rounded text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:border-slate-300 dark:hover:border-slate-700 shadow-xs transition-fast text-[11px]"
           title="Copy SQL"
+          aria-label="Copy SQL query"
         >
           {copied ? (
             <>
-              <Check size={12} className="text-emerald-600 dark:text-emerald-400" />
-              <span className="text-emerald-600 dark:text-emerald-400 font-sans">Copied</span>
+              <Check size={13} className="text-emerald-600 dark:text-emerald-400" />
+              <span className="text-emerald-600 dark:text-emerald-400 font-sans font-semibold">Copied</span>
             </>
           ) : (
             <>
-              <Copy size={12} />
-              <span className="font-sans">Copy</span>
+              <Copy size={13} />
+              <span className="font-sans font-semibold">Copy</span>
             </>
           )}
         </button>
       </div>
-      <pre className="text-slate-800 dark:text-slate-200 leading-relaxed pr-16 whitespace-pre-wrap break-all">
-        {highlightSql(sql)}
-      </pre>
+      <div className="overflow-x-auto p-3 pt-3.5">
+        <pre className="text-slate-800 dark:text-slate-200 leading-relaxed pr-20 whitespace-pre">
+          {highlightSql(sql)}
+        </pre>
+      </div>
     </div>
   );
 };

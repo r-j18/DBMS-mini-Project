@@ -264,7 +264,7 @@ export const CourtRecordsPage: React.FC = () => {
 )}
       </div>
 
-      {/* Main Table */}
+      {/* Main Table & Mobile Cards */}
       <DataTable
         data={courtRecords}
         columns={columns}
@@ -273,6 +273,67 @@ export const CourtRecordsPage: React.FC = () => {
         pageSize={15}
         emptyTitle="No court records on file"
         emptyDescription="No court room assignments currently active in the judicial docket."
+        mobileCardRenderer={(record) => (
+          <div className="space-y-2.5">
+            <div className="flex items-start justify-between gap-2">
+              <div>
+                <div className="flex items-center gap-1.5 font-typewriter font-bold text-[#854D0E] dark:text-amber-400 text-sm">
+                  <Gavel size={15} className="text-[#B08D3C]" />
+                  <span>CHAMBER ROOM #{record.court_room_number}</span>
+                </div>
+                <div className="flex items-center gap-1.5 mt-1">
+                  <span className="font-mono text-[#B3261E] font-bold text-xs">
+                    #{record.criminal_id}
+                  </span>
+                  <span className="font-typewriter font-bold text-sm text-[#1F1F1F] dark:text-[#E2DFD8]">
+                    {record.criminal_name}
+                  </span>
+                </div>
+              </div>
+
+              {record.investigation_status && (
+                <StatusBadge status={record.investigation_status} size="sm" />
+              )}
+            </div>
+
+            <div className="grid grid-cols-2 gap-2 text-xs pt-1 border-t border-[#D9D0BE]/60 dark:border-[#2E323B]/60 font-typewriter">
+              <div>
+                <span className="text-[10px] uppercase font-bold text-[#7A7A7A] block">Charge</span>
+                <span className="text-[#1F1F1F] dark:text-[#E2DFD8] truncate block">
+                  {record.crime || 'Unspecified'}
+                </span>
+              </div>
+              <div>
+                <span className="text-[10px] uppercase font-bold text-[#7A7A7A] block">Officer In Charge</span>
+                <span className="text-[#1F1F1F] dark:text-[#E2DFD8] truncate block">
+                  {record.officer_name ? `${record.officer_rank || ''} ${record.officer_name}` : 'None'}
+                </span>
+              </div>
+            </div>
+
+            {/* Mobile Actions */}
+            {role === 'admin' && (
+              <div className="flex items-center justify-end gap-2 pt-2 border-t border-[#D9D0BE]/60 dark:border-[#2E323B]/60">
+                <button
+                  type="button"
+                  onClick={() => handleOpenReassign(record)}
+                  className="min-h-[44px] px-3 flex items-center justify-center gap-1.5 text-xs font-typewriter font-semibold border border-[#D9D0BE] dark:border-[#2E323B] bg-[#EFE9DC] dark:bg-[#1F2228] text-[#1F1F1F] dark:text-[#E2DFD8] rounded-xs"
+                >
+                  <RefreshCw size={13} />
+                  <span>REASSIGN</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setDeleteTarget(record)}
+                  className="min-h-[44px] px-3 flex items-center justify-center gap-1.5 text-xs font-typewriter font-semibold border border-red-300 dark:border-red-900/60 bg-red-50 dark:bg-red-950/30 text-[#B3261E] rounded-xs"
+                >
+                  <Trash2 size={13} />
+                  <span>CLEAR</span>
+                </button>
+              </div>
+            )}
+          </div>
+        )}
       />
 
       {/* Assign Modal */}
@@ -290,10 +351,12 @@ export const CourtRecordsPage: React.FC = () => {
             </label>
             <input
               type="number"
+              inputMode="numeric"
+              min="1"
               value={newRoomNumber}
               onChange={(e) => setNewRoomNumber(e.target.value)}
               placeholder="e.g. 6"
-              className="w-full h-8 px-2.5 font-mono bg-[#EFE9DC] dark:bg-[#16181C] border border-[#D9D0BE] dark:border-[#2E323B] rounded-xs text-[#1F1F1F] dark:text-[#E2DFD8] focus:outline-none"
+              className="w-full min-h-[44px] px-3 font-mono text-base sm:text-xs bg-[#EFE9DC] dark:bg-[#16181C] border border-[#D9D0BE] dark:border-[#2E323B] rounded-xs text-[#1F1F1F] dark:text-[#E2DFD8] focus:outline-none focus:ring-1 focus:ring-[#B08D3C]"
             />
           </div>
 
@@ -309,7 +372,7 @@ export const CourtRecordsPage: React.FC = () => {
               <select
                 value={selectedCriminalId}
                 onChange={(e) => setSelectedCriminalId(e.target.value)}
-                className="w-full h-8 px-2 bg-[#EFE9DC] dark:bg-[#16181C] border border-[#D9D0BE] dark:border-[#2E323B] rounded-xs text-[#1F1F1F] dark:text-[#E2DFD8] focus:outline-none"
+                className="w-full min-h-[44px] px-3 text-base sm:text-xs bg-[#EFE9DC] dark:bg-[#16181C] border border-[#D9D0BE] dark:border-[#2E323B] rounded-xs text-[#1F1F1F] dark:text-[#E2DFD8] focus:outline-none focus:ring-1 focus:ring-[#B08D3C]"
               >
                 {unassignedCriminals.map((c) => (
                   <option key={c.criminal_id} value={c.criminal_id}>
@@ -324,14 +387,14 @@ export const CourtRecordsPage: React.FC = () => {
             <button
               type="button"
               onClick={() => setIsAssignModalOpen(false)}
-              className="px-3 py-1.5 border border-[#D9D0BE] dark:border-[#2E323B] rounded-xs text-[#1F1F1F] dark:text-[#E2DFD8] hover:bg-[#EFE9DC]"
+              className="min-h-[44px] px-4 border border-[#D9D0BE] dark:border-[#2E323B] rounded-xs text-[#1F1F1F] dark:text-[#E2DFD8] hover:bg-[#EFE9DC] font-typewriter text-xs"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={unassignedCriminals.length === 0 || isSubmitting}
-              className="px-3 py-1.5 bg-[#1F2D3D] text-[#EFE9DC] hover:bg-[#141D27] rounded-xs font-bold disabled:opacity-50 shadow-paper"
+              className="min-h-[44px] px-4 bg-[#1F2D3D] text-[#EFE9DC] hover:bg-[#141D27] rounded-xs font-bold disabled:opacity-50 shadow-paper font-typewriter text-xs"
             >
               {isSubmitting ? 'Assigning...' : 'Assign Chamber'}
             </button>
@@ -355,7 +418,7 @@ export const CourtRecordsPage: React.FC = () => {
             <select
               value={reassignCriminalId}
               onChange={(e) => setReassignCriminalId(e.target.value)}
-              className="w-full h-8 px-2 bg-[#EFE9DC] dark:bg-[#16181C] border border-[#D9D0BE] dark:border-[#2E323B] rounded-xs text-[#1F1F1F] dark:text-[#E2DFD8] focus:outline-none"
+              className="w-full min-h-[44px] px-3 text-base sm:text-xs bg-[#EFE9DC] dark:bg-[#16181C] border border-[#D9D0BE] dark:border-[#2E323B] rounded-xs text-[#1F1F1F] dark:text-[#E2DFD8] focus:outline-none focus:ring-1 focus:ring-[#B08D3C]"
             >
               {unassignedCriminals.map((c) => (
                 <option key={c.criminal_id} value={c.criminal_id}>
@@ -370,14 +433,14 @@ export const CourtRecordsPage: React.FC = () => {
             <button
               type="button"
               onClick={() => setIsReassignModalOpen(false)}
-              className="px-3 py-1.5 border border-[#D9D0BE] dark:border-[#2E323B] rounded-xs text-[#1F1F1F] dark:text-[#E2DFD8] hover:bg-[#EFE9DC]"
+              className="min-h-[44px] px-4 border border-[#D9D0BE] dark:border-[#2E323B] rounded-xs text-[#1F1F1F] dark:text-[#E2DFD8] hover:bg-[#EFE9DC] font-typewriter text-xs"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={isSubmitting}
-              className="px-3 py-1.5 bg-[#1F2D3D] text-[#EFE9DC] hover:bg-[#141D27] rounded-xs font-bold disabled:opacity-50 shadow-paper"
+              className="min-h-[44px] px-4 bg-[#1F2D3D] text-[#EFE9DC] hover:bg-[#141D27] rounded-xs font-bold disabled:opacity-50 shadow-paper font-typewriter text-xs"
             >
               {isSubmitting ? 'Updating...' : 'Save Reassignment'}
             </button>

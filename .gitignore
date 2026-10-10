@@ -7,3 +7,8 @@ dist
 *.log
 scratch/
 test-images/
+client/tests/responsive/screenshots/
+test-results/
+playwright-report/
+.chrome-lighthouse-data/
+client/tests/responsive/lighthouse-*.json

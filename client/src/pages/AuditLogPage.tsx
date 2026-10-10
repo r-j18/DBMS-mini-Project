@@ -164,6 +164,85 @@ export const AuditLogPage: React.FC = () => {
     []
   );
 
+  const filterControls = (
+    <div className="space-y-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-2.5">
+        {/* User Search */}
+        <input
+          type="text"
+          value={userFilter}
+          onChange={(e) => setUserFilter(e.target.value)}
+          onKeyDown={(e) => e.key === 'Enter' && loadAuditLogs(1)}
+          placeholder="Filter by username / ID..."
+          className="h-11 sm:h-8 px-2.5 bg-[#FAF7F0] dark:bg-[#252830] border border-[#D8D2C2] dark:border-[#383C45] rounded-xs font-typewriter text-base sm:text-xs text-[#1F1F1F] dark:text-[#E2DFD8] placeholder:text-[#A09D95] focus:outline-none focus:border-[#B08D3C]"
+        />
+
+        {/* Action Filter */}
+        <select
+          value={actionFilter}
+          onChange={(e) => setActionFilter(e.target.value)}
+          className="h-11 sm:h-8 px-2.5 bg-[#FAF7F0] dark:bg-[#252830] border border-[#D8D2C2] dark:border-[#383C45] rounded-xs font-typewriter text-base sm:text-xs text-[#1F1F1F] dark:text-[#E2DFD8] focus:outline-none focus:border-[#B08D3C]"
+        >
+          <option value="">All Action Types</option>
+          <option value="LOGIN">LOGIN</option>
+          <option value="LOGOUT">LOGOUT</option>
+          <option value="LOGIN_FAILED">LOGIN_FAILED</option>
+          <option value="CREATE">CREATE</option>
+          <option value="UPDATE">UPDATE</option>
+          <option value="DELETE">DELETE</option>
+          <option value="SQL_RUN">SQL_RUN</option>
+        </select>
+
+        {/* Target Table */}
+        <select
+          value={tableFilter}
+          onChange={(e) => setTableFilter(e.target.value)}
+          className="h-11 sm:h-8 px-2.5 bg-[#FAF7F0] dark:bg-[#252830] border border-[#D8D2C2] dark:border-[#383C45] rounded-xs font-typewriter text-base sm:text-xs text-[#1F1F1F] dark:text-[#E2DFD8] focus:outline-none focus:border-[#B08D3C]"
+        >
+          <option value="">All Entities</option>
+          <option value="POLICE">POLICE</option>
+          <option value="CRIMINAL">CRIMINAL</option>
+          <option value="COURT_RECORD">COURT_RECORD</option>
+          <option value="JAIL">JAIL</option>
+          <option value="USERS">USERS</option>
+        </select>
+
+        {/* Start Date */}
+        <input
+          type="date"
+          value={startDate}
+          onChange={(e) => setStartDate(e.target.value)}
+          className="h-11 sm:h-8 px-2.5 bg-[#FAF7F0] dark:bg-[#252830] border border-[#D8D2C2] dark:border-[#383C45] rounded-xs font-typewriter text-base sm:text-xs text-[#1F1F1F] dark:text-[#E2DFD8] focus:outline-none focus:border-[#B08D3C]"
+          title="Start Date"
+        />
+
+        {/* End Date */}
+        <input
+          type="date"
+          value={endDate}
+          onChange={(e) => setEndDate(e.target.value)}
+          className="h-11 sm:h-8 px-2.5 bg-[#FAF7F0] dark:bg-[#252830] border border-[#D8D2C2] dark:border-[#383C45] rounded-xs font-typewriter text-base sm:text-xs text-[#1F1F1F] dark:text-[#E2DFD8] focus:outline-none focus:border-[#B08D3C]"
+          title="End Date"
+        />
+      </div>
+
+      <div className="flex items-center justify-between pt-1">
+        <button
+          onClick={() => loadAuditLogs(1)}
+          className="min-h-[44px] px-3.5 bg-[#1F2D3D] text-[#EFE9DC] text-xs font-typewriter font-bold rounded-xs flex items-center justify-center"
+        >
+          APPLY FILTERS
+        </button>
+        <button
+          onClick={handleClearFilters}
+          className="min-h-[44px] px-3 text-xs font-typewriter text-[#7A7A7A] hover:text-[#1F1F1F] dark:hover:text-white flex items-center justify-center"
+        >
+          Reset Filters
+        </button>
+      </div>
+    </div>
+  );
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -182,10 +261,10 @@ export const AuditLogPage: React.FC = () => {
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <button
             onClick={() => loadAuditLogs(1)}
-            className="h-8 px-2.5 flex items-center gap-1.5 text-xs font-typewriter border border-[#D8D2C2] dark:border-[#383C45] bg-[#FAF7F0] dark:bg-[#252830] text-[#1F1F1F] dark:text-[#E2DFD8] hover:border-[#B08D3C] rounded-xs transition-fast"
+            className="min-h-[44px] px-3 flex items-center gap-1.5 text-xs font-typewriter border border-[#D8D2C2] dark:border-[#383C45] bg-[#FAF7F0] dark:bg-[#252830] text-[#1F1F1F] dark:text-[#E2DFD8] hover:border-[#B08D3C] rounded-xs transition-fast"
             title="Reload Audit Entries"
           >
             <RotateCcw size={13} />
@@ -194,7 +273,7 @@ export const AuditLogPage: React.FC = () => {
 
           <button
             onClick={handleExportCsv}
-            className="h-8 px-3 flex items-center gap-1.5 text-xs font-typewriter font-bold bg-[#1F2D3D] hover:bg-[#141D27] text-[#EFE9DC] rounded-xs shadow-paper transition-fast"
+            className="min-h-[44px] px-3.5 flex items-center gap-1.5 text-xs font-typewriter font-bold bg-[#1F2D3D] hover:bg-[#141D27] text-[#EFE9DC] rounded-xs shadow-paper transition-fast"
           >
             <Download size={13} className="text-[#B08D3C]" />
             <span>EXPORT CSV ARCHIVE</span>
@@ -202,87 +281,13 @@ export const AuditLogPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Filter Bar */}
-      <div className="p-3 bg-[#FAF7F0] dark:bg-[#1E2024] border border-[#D8D2C2] dark:border-[#383C45] rounded-xs space-y-3">
+      {/* Filter Bar (Desktop & Tablet) */}
+      <div className="hidden sm:block p-3 bg-[#FAF7F0] dark:bg-[#1E2024] border border-[#D8D2C2] dark:border-[#383C45] rounded-xs space-y-3">
         <div className="flex items-center gap-2 text-xs font-typewriter font-bold text-[#1F1F1F] dark:text-[#E2DFD8] uppercase">
           <Filter size={13} className="text-[#B08D3C]" />
           <span>Audit Query Filters</span>
         </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-2.5">
-          {/* User Search */}
-          <input
-            type="text"
-            value={userFilter}
-            onChange={(e) => setUserFilter(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && loadAuditLogs(1)}
-            placeholder="Filter by username / ID..."
-            className="px-2.5 py-1.5 bg-[#FAF7F0] dark:bg-[#252830] border border-[#D8D2C2] dark:border-[#383C45] rounded-xs font-typewriter text-xs text-[#1F1F1F] dark:text-[#E2DFD8] placeholder:text-[#A09D95] focus:outline-none focus:border-[#B08D3C]"
-          />
-
-          {/* Action Filter */}
-          <select
-            value={actionFilter}
-            onChange={(e) => setActionFilter(e.target.value)}
-            className="px-2.5 py-1.5 bg-[#FAF7F0] dark:bg-[#252830] border border-[#D8D2C2] dark:border-[#383C45] rounded-xs font-typewriter text-xs text-[#1F1F1F] dark:text-[#E2DFD8] focus:outline-none focus:border-[#B08D3C]"
-          >
-            <option value="">All Action Types</option>
-            <option value="LOGIN">LOGIN</option>
-            <option value="LOGOUT">LOGOUT</option>
-            <option value="LOGIN_FAILED">LOGIN_FAILED</option>
-            <option value="CREATE">CREATE</option>
-            <option value="UPDATE">UPDATE</option>
-            <option value="DELETE">DELETE</option>
-            <option value="SQL_RUN">SQL_RUN</option>
-          </select>
-
-          {/* Target Table */}
-          <select
-            value={tableFilter}
-            onChange={(e) => setTableFilter(e.target.value)}
-            className="px-2.5 py-1.5 bg-[#FAF7F0] dark:bg-[#252830] border border-[#D8D2C2] dark:border-[#383C45] rounded-xs font-typewriter text-xs text-[#1F1F1F] dark:text-[#E2DFD8] focus:outline-none focus:border-[#B08D3C]"
-          >
-            <option value="">All Entities</option>
-            <option value="POLICE">POLICE</option>
-            <option value="CRIMINAL">CRIMINAL</option>
-            <option value="COURT_RECORD">COURT_RECORD</option>
-            <option value="JAIL">JAIL</option>
-            <option value="USERS">USERS</option>
-          </select>
-
-          {/* Start Date */}
-          <input
-            type="date"
-            value={startDate}
-            onChange={(e) => setStartDate(e.target.value)}
-            className="px-2.5 py-1.5 bg-[#FAF7F0] dark:bg-[#252830] border border-[#D8D2C2] dark:border-[#383C45] rounded-xs font-typewriter text-xs text-[#1F1F1F] dark:text-[#E2DFD8] focus:outline-none focus:border-[#B08D3C]"
-            title="Start Date"
-          />
-
-          {/* End Date */}
-          <input
-            type="date"
-            value={endDate}
-            onChange={(e) => setEndDate(e.target.value)}
-            className="px-2.5 py-1.5 bg-[#FAF7F0] dark:bg-[#252830] border border-[#D8D2C2] dark:border-[#383C45] rounded-xs font-typewriter text-xs text-[#1F1F1F] dark:text-[#E2DFD8] focus:outline-none focus:border-[#B08D3C]"
-            title="End Date"
-          />
-        </div>
-
-        <div className="flex items-center justify-between pt-1">
-          <button
-            onClick={() => loadAuditLogs(1)}
-            className="px-3 py-1 bg-[#1F2D3D] text-[#EFE9DC] text-xs font-typewriter font-bold rounded-xs"
-          >
-            APPLY FILTERS
-          </button>
-          <button
-            onClick={handleClearFilters}
-            className="text-xs font-typewriter text-[#7A7A7A] hover:text-[#1F1F1F] dark:hover:text-white"
-          >
-            Reset Filters
-          </button>
-        </div>
+        {filterControls}
       </div>
 
       {/* Dense Audit Log DataTable */}
@@ -291,10 +296,20 @@ export const AuditLogPage: React.FC = () => {
         data={logs}
         isLoading={loading}
         emptyTitle="No audit logs recorded for the selected query filters."
+        hasActiveFilters={Boolean(userFilter || actionFilter || tableFilter || startDate || endDate)}
+        filterSheetContent={
+          <div className="space-y-4">
+            <h4 className="font-typewriter text-xs font-bold text-[#1F1F1F] dark:text-[#E2DFD8] uppercase">
+              Filter Audit Records
+            </h4>
+            {filterControls}
+          </div>
+        }
+        onResetFilters={handleClearFilters}
       />
 
       {/* Pagination Controls */}
-      <div className="flex items-center justify-between px-3 py-2 bg-[#FAF7F0] dark:bg-[#1E2024] border border-[#D8D2C2] dark:border-[#383C45] rounded-xs font-typewriter text-xs">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-3 py-2 bg-[#FAF7F0] dark:bg-[#1E2024] border border-[#D8D2C2] dark:border-[#383C45] rounded-xs font-typewriter text-xs">
         <span className="text-[#6B685F] dark:text-[#A09D95]">
           Page {pagination.page} of {pagination.totalPages} ({pagination.total} total audit records)
         </span>
@@ -302,14 +317,14 @@ export const AuditLogPage: React.FC = () => {
           <button
             disabled={pagination.page <= 1}
             onClick={() => loadAuditLogs(pagination.page - 1)}
-            className="px-2.5 py-1 border border-[#D8D2C2] dark:border-[#383C45] rounded-xs disabled:opacity-40"
+            className="min-h-[44px] min-w-[44px] px-3 flex items-center justify-center border border-[#D8D2C2] dark:border-[#383C45] rounded-xs disabled:opacity-40"
           >
             PREV
           </button>
           <button
             disabled={pagination.page >= pagination.totalPages}
             onClick={() => loadAuditLogs(pagination.page + 1)}
-            className="px-2.5 py-1 border border-[#D8D2C2] dark:border-[#383C45] rounded-xs disabled:opacity-40"
+            className="min-h-[44px] min-w-[44px] px-3 flex items-center justify-center border border-[#D8D2C2] dark:border-[#383C45] rounded-xs disabled:opacity-40"
           >
             NEXT
           </button>

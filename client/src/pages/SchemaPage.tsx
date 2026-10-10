@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
-import { Database, Key, Link2, Copy, Check, Info, FileText } from 'lucide-react';
+import { Database, Key, Link2, Copy, Check, Info, FileText, ZoomIn, ZoomOut, RotateCcw, List } from 'lucide-react';
 import { SqlBlock } from '../components/common/SqlBlock';
 import { PushPin } from '../components/common/PushPin';
 import { Stamp } from '../components/common/Stamp';
 
 export const SchemaPage: React.FC = () => {
   const [copied, setCopied] = useState(false);
+  const [erdViewMode, setErdViewMode] = useState<'diagram' | 'relationships'>('diagram');
+  const [zoomLevel, setZoomLevel] = useState(1);
 
   const rawSchemaSql = `-- Criminal Record Management System (CRMS) Schema
 -- MySQL 8.0 Compliant DDL
@@ -161,7 +163,7 @@ CREATE TABLE CRIMINAL_PHOTO (
 
         <button
           onClick={handleCopySchema}
-          className="h-8 px-3 flex items-center gap-2 text-xs font-typewriter font-semibold border border-[#D8D2C2] dark:border-[#383C45] bg-[#FAF7F0] dark:bg-[#252830] text-[#1F1F1F] dark:text-[#E2DFD8] hover:border-[#B08D3C] hover:bg-[#EFE9DC] dark:hover:bg-[#2C303A] rounded-xs transition-fast shrink-0 shadow-xs"
+          className="w-full sm:w-auto min-h-[44px] px-3.5 flex items-center justify-center gap-2 text-xs font-typewriter font-semibold border border-[#D8D2C2] dark:border-[#383C45] bg-[#FAF7F0] dark:bg-[#252830] text-[#1F1F1F] dark:text-[#E2DFD8] hover:border-[#B08D3C] hover:bg-[#EFE9DC] dark:hover:bg-[#2C303A] rounded-xs transition-fast shrink-0 shadow-xs"
         >
           {copied ? <Check size={13} className="text-[#386641]" /> : <Copy size={13} className="text-[#B08D3C]" />}
           <span>{copied ? 'COPIED TO CLIPBOARD' : 'COPY SCHEMA.SQL'}</span>
@@ -178,17 +180,84 @@ CREATE TABLE CRIMINAL_PHOTO (
           <PushPin color="red" size={20} />
         </div>
 
-        <div className="flex items-center justify-between pb-3 border-b border-[#D8D2C2] dark:border-[#383C45] pl-6 pr-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-[#D8D2C2] dark:border-[#383C45] pl-6 pr-6">
           <div className="flex items-center gap-2 text-xs font-typewriter font-bold text-[#1F1F1F] dark:text-[#E2DFD8] uppercase tracking-wider">
             <Database size={15} className="text-[#B08D3C]" />
             <span>Entity Relationship Diagram (ERD) — Bureau Blueprint</span>
           </div>
-          <span className="font-mono text-[10px] text-[#7A7A7A] uppercase">
-            Normalized 3NF Relational Model
-          </span>
+
+          <div className="flex items-center gap-2 flex-wrap">
+            {/* View Mode Toggle: Diagram vs Relationship List */}
+            <div className="inline-flex items-center p-0.5 rounded-xs border border-[#D8D2C2] dark:border-[#383C45] bg-[#EFE9DC] dark:bg-[#16181C]">
+              <button
+                type="button"
+                onClick={() => setErdViewMode('diagram')}
+                className={`min-h-[36px] sm:min-h-0 px-2.5 py-1 text-[11px] font-typewriter font-bold rounded-xs transition-fast ${
+                  erdViewMode === 'diagram'
+                    ? 'bg-[#1F2D3D] text-[#EFE9DC]'
+                    : 'text-[#6B685F] dark:text-[#A09D95] hover:text-[#1F1F1F]'
+                }`}
+              >
+                Diagram
+              </button>
+              <button
+                type="button"
+                onClick={() => setErdViewMode('relationships')}
+                className={`min-h-[36px] sm:min-h-0 px-2.5 py-1 text-[11px] font-typewriter font-bold rounded-xs transition-fast flex items-center gap-1 ${
+                  erdViewMode === 'relationships'
+                    ? 'bg-[#1F2D3D] text-[#EFE9DC]'
+                    : 'text-[#6B685F] dark:text-[#A09D95] hover:text-[#1F1F1F]'
+                }`}
+              >
+                <List size={12} />
+                <span>Relationships</span>
+              </button>
+            </div>
+
+            {/* Zoom Controls when Diagram mode is active */}
+            {erdViewMode === 'diagram' && (
+              <div className="hidden sm:inline-flex items-center gap-1 border border-[#D8D2C2] dark:border-[#383C45] rounded-xs bg-[#EFE9DC] dark:bg-[#16181C] px-1 py-0.5">
+                <button
+                  type="button"
+                  onClick={() => setZoomLevel((z) => Math.max(0.7, +(z - 0.15).toFixed(2)))}
+                  className="p-1 text-[#6B685F] hover:text-[#1F1F1F] dark:text-[#A09D95] dark:hover:text-white"
+                  title="Zoom Out"
+                >
+                  <ZoomOut size={13} />
+                </button>
+                <span className="font-mono text-[10px] w-9 text-center font-bold text-[#1F1F1F] dark:text-[#E2DFD8]">
+                  {Math.round(zoomLevel * 100)}%
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setZoomLevel((z) => Math.min(1.5, +(z + 0.15).toFixed(2)))}
+                  className="p-1 text-[#6B685F] hover:text-[#1F1F1F] dark:text-[#A09D95] dark:hover:text-white"
+                  title="Zoom In"
+                >
+                  <ZoomIn size={13} />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setZoomLevel(1)}
+                  className="p-1 text-[#6B685F] hover:text-[#1F1F1F] dark:text-[#A09D95] dark:hover:text-white ml-0.5"
+                  title="Reset Zoom"
+                >
+                  <RotateCcw size={11} />
+                </button>
+              </div>
+            )}
+          </div>
         </div>
 
-        <div className="w-full overflow-x-auto py-2">
+        {erdViewMode === 'diagram' ? (
+          <div className="w-full overflow-x-auto py-2 touch-pan-x">
+            <div
+              style={{
+                transform: `scale(${zoomLevel})`,
+                transformOrigin: 'top left',
+                transition: 'transform 150ms ease',
+              }}
+            >
           <svg
             viewBox="0 0 920 490"
             className="w-full min-w-[760px] text-[#1F1F1F] dark:text-[#E2DFD8] select-none"
@@ -448,7 +517,56 @@ CREATE TABLE CRIMINAL_PHOTO (
               </text>
             </g>
           </svg>
-        </div>
+            </div>
+          </div>
+        ) : (
+          <div className="space-y-3 py-2 font-typewriter">
+            <div className="p-3 bg-[#EFE9DC] dark:bg-[#16181C] border border-[#D8D2C2] dark:border-[#383C45] rounded-xs space-y-1">
+              <div className="flex items-center gap-2 font-bold text-xs text-[#1F1F1F] dark:text-[#E2DFD8]">
+                <span className="font-mono text-[#B3261E]">1. POLICE → CRIMINAL (1 : N)</span>
+              </div>
+              <p className="text-[11px] text-[#6B685F] dark:text-[#A09D95]">
+                <code className="font-mono font-bold text-[#1F2D3D] dark:text-[#B08D3C]">CRIMINAL.investigating_officer</code> references <code className="font-mono font-bold text-[#1F2D3D] dark:text-[#B08D3C]">POLICE.police_id</code>.
+                Foreign Key constraint: <span className="font-mono text-[10px]">ON UPDATE CASCADE ON DELETE RESTRICT</span>.
+                Each officer can supervise multiple offender dossiers; each offender has one designated lead officer.
+              </p>
+            </div>
+
+            <div className="p-3 bg-[#EFE9DC] dark:bg-[#16181C] border border-[#D8D2C2] dark:border-[#383C45] rounded-xs space-y-1">
+              <div className="flex items-center gap-2 font-bold text-xs text-[#1F1F1F] dark:text-[#E2DFD8]">
+                <span className="font-mono text-[#B3261E]">2. CRIMINAL → COURT_RECORD (1 : 1)</span>
+              </div>
+              <p className="text-[11px] text-[#6B685F] dark:text-[#A09D95]">
+                <code className="font-mono font-bold text-[#1F2D3D] dark:text-[#B08D3C]">COURT_RECORD.criminal_id</code> references <code className="font-mono font-bold text-[#1F2D3D] dark:text-[#B08D3C]">CRIMINAL.criminal_id</code>.
+                Primary Key: <code className="font-mono font-bold text-[#1F2D3D] dark:text-[#B08D3C]">court_room_number</code>.
+                Foreign Key constraint: <span className="font-mono text-[10px]">ON UPDATE CASCADE ON DELETE RESTRICT</span>.
+                Associates an offender with their ongoing judicial chamber proceeding.
+              </p>
+            </div>
+
+            <div className="p-3 bg-[#EFE9DC] dark:bg-[#16181C] border border-[#D8D2C2] dark:border-[#383C45] rounded-xs space-y-1">
+              <div className="flex items-center gap-2 font-bold text-xs text-[#1F1F1F] dark:text-[#E2DFD8]">
+                <span className="font-mono text-[#B3261E]">3. CRIMINAL → JAIL (1 : 1 UNIQUE)</span>
+              </div>
+              <p className="text-[11px] text-[#6B685F] dark:text-[#A09D95]">
+                <code className="font-mono font-bold text-[#1F2D3D] dark:text-[#B08D3C]">JAIL.criminal_id</code> is marked <span className="font-bold underline">UNIQUE</span> and references <code className="font-mono font-bold text-[#1F2D3D] dark:text-[#B08D3C]">CRIMINAL.criminal_id</code>.
+                Foreign Key constraint: <span className="font-mono text-[10px]">ON UPDATE CASCADE ON DELETE RESTRICT</span>.
+                Ensures an incarcerated convict cannot be booked into multiple facilities simultaneously.
+              </p>
+            </div>
+
+            <div className="p-3 bg-[#EFE9DC] dark:bg-[#16181C] border border-[#D8D2C2] dark:border-[#383C45] rounded-xs space-y-1">
+              <div className="flex items-center gap-2 font-bold text-xs text-[#1F1F1F] dark:text-[#E2DFD8]">
+                <span className="font-mono text-[#B3261E]">4. CRIMINAL → CRIMINAL_PHOTO (1 : 1 CASCADE)</span>
+              </div>
+              <p className="text-[11px] text-[#6B685F] dark:text-[#A09D95]">
+                <code className="font-mono font-bold text-[#1F2D3D] dark:text-[#B08D3C]">CRIMINAL_PHOTO.criminal_id</code> is marked <span className="font-bold underline">UNIQUE</span> and references <code className="font-mono font-bold text-[#1F2D3D] dark:text-[#B08D3C]">CRIMINAL.criminal_id</code>.
+                Foreign Key constraint: <span className="font-mono text-[10px]">ON DELETE CASCADE</span>.
+                Stores binary compressed WebP mugshot and thumbnail assets directly in the database.
+              </p>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Schema Notes & Requirements Highlights */}
@@ -495,7 +613,7 @@ CREATE TABLE CRIMINAL_PHOTO (
           </span>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 gap-4">
           {tables.map((t) => (
             <div
               key={t.name}

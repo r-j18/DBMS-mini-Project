@@ -330,3 +330,47 @@ Vercel Preview deployments use a dedicated, isolated TiDB database (e.g. `crimin
    - `db/migrations/001_users_audit_log.sql`
    - `db/migrations/002_criminal_photo.sql`
 
+---
+
+## Responsive Behavior & Mobile/Tablet Optimization (`feature/responsive`)
+
+The Criminal Record Management System provides a fully adaptive, mobile-first design supporting screens down to 320px width without horizontal viewport scrolling or clipped functionality.
+
+### 1. Viewport Breakpoints
+- **Mobile (< 768px)**:
+  - Single-column stacked layouts across Dashboard metrics, dossiers, and forms.
+  - Sticky primary Topbar (`h-14`) with tap targets `>= 44px`.
+  - Tables automatically adapt into interactive Record Cards with search, filters, and pagination intact.
+  - CRUD and edit forms render inside full-screen mobile drawers (`w-full inset-0`) with fixed bottom action bars.
+  - Case Board operates in touch mode: pinch-to-zoom (0.3x–2.0x), multi-touch canvas panning, node drag, floating zoom controls, and bottom sheets for filters and node inspection.
+- **Tablet (768px – 1023px)**:
+  - 2-column dossier and dashboard grid reflow.
+  - Dual presentation: Data tables display with horizontally scrolling containers and sticky left/right columns (`ID`, `Actions`).
+  - Modal dialogs center with maximum width constraints (`max-w-lg`).
+- **Desktop (>= 1024px)**:
+  - Full multi-column dashboard and dossier grids.
+  - Side-by-side forms and wide data tables.
+  - Split-view Query Explorer and wide interactive SVG ER diagrams.
+
+### 2. Collapsible Navigation Sidebar
+- **Mobile (< 768px)**: Off-canvas drawer opened via Topbar hamburger button or edge gestures. Features backdrop overlay, auto-closing on route navigation, `Escape` key handling, focus trap, and body scroll lock.
+- **Tablet (768px – 1023px)**: Default 64px icon rail. Tapping the expand trigger reveals the navigation labels as an overlay positioned above the main content without layout thrashing. Closes on backdrop tap or `Escape`.
+- **Desktop (>= 1024px)**: Full 240px sidebar collapsible to a 64px icon rail. State toggles with smooth 200ms width transition and persists across page reloads via `localStorage` (`crms_sidebar_expanded`).
+
+### 3. Touch Targets & Accessibility
+- All interactive controls (buttons, inputs, selects, tab triggers, modal dismissals) adhere to a minimum `44px x 44px` touch target size (`min-h-[44px]`).
+- Form inputs disable iOS auto-zoom via `text-base sm:text-sm` (16px base font size on touch screens).
+- WCAG AA color contrast and ARIA landmarks verified across all pages (Lighthouse Accessibility score >= 90).
+
+### 4. Running Responsive Playwright Tests
+The automated test suite runs 18 tests across 7 viewports (`320x640`, `360x740`, `390x844`, `768x1024`, `820x1180`, `1024x768`, and `1280x800`) for Admin and Viewer roles. It validates zero horizontal overflow, zero console errors, gesture handling, sidebar state persistence, and drawer focus trap.
+
+```bash
+# Ensure local dev servers are running (ports 5000 and 5173)
+npm run dev
+
+# In another terminal, run responsive tests:
+cd client
+npm run test:responsive
+```
+

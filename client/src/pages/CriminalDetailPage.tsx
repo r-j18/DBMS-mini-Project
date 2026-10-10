@@ -161,10 +161,11 @@ export const CriminalDetailPage: React.FC = () => {
         <div className="flex items-center gap-3">
           <button
             onClick={() => navigate('/criminals')}
-            className="p-1.5 rounded-xs border border-[#D9D0BE] dark:border-[#2E323B] hover:bg-[#EFE9DC] dark:hover:bg-[#1F2228] text-[#1F1F1F] dark:text-[#E2DFD8] transition-fast shadow-paper"
+            className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-xs border border-[#D9D0BE] dark:border-[#2E323B] hover:bg-[#EFE9DC] dark:hover:bg-[#1F2228] text-[#1F1F1F] dark:text-[#E2DFD8] transition-fast shadow-paper"
             title="Return to registry"
+            aria-label="Return to registry"
           >
-            <ArrowLeft size={15} />
+            <ArrowLeft size={16} />
           </button>
           <div>
             <div className="flex items-center gap-2">
@@ -182,7 +183,7 @@ export const CriminalDetailPage: React.FC = () => {
         </div>
 
         {/* Rubber Stamps: Status + CONFIDENTIAL */}
-        <div className="flex items-center gap-3 shrink-0">
+        <div className="flex items-center gap-3 shrink-0 flex-wrap">
           <StatusBadge status={criminal.investigation_status} size="md" animateSlam={true} />
           <Stamp text="CONFIDENTIAL" variant="confidential" size="md" rotateDeg={2.5} animateSlam={true} />
         </div>
@@ -201,7 +202,7 @@ export const CriminalDetailPage: React.FC = () => {
           </div>
 
           {/* Mugshot frame with height ruler graphic & silhouette / real photo */}
-          <div className="my-4 w-52 h-64 bg-[#E6DFCD] dark:bg-[#15171B] border-2 border-[#1F1F1F] dark:border-[#3A3F4D] rounded-xs relative flex items-end justify-center shadow-inner overflow-hidden">
+          <div className="my-4 w-full max-w-[220px] h-64 bg-[#E6DFCD] dark:bg-[#15171B] border-2 border-[#1F1F1F] dark:border-[#3A3F4D] rounded-xs relative flex items-end justify-center shadow-inner overflow-hidden">
             {/* Height-chart ruler graphic behind silhouette/photo */}
             <div className="absolute inset-y-0 left-0 w-12 border-r border-[#C5BBA6] dark:border-[#2C303A] flex flex-col justify-between py-2 text-[9px] font-mono text-[#7A6C58] select-none pl-1.5 z-0">
               <span className="border-b border-[#C5BBA6] pr-1">6'3" ──</span>
@@ -257,7 +258,7 @@ export const CriminalDetailPage: React.FC = () => {
 
           {/* Admin-only Photo Controls on the Frame */}
           {role === 'admin' && (
-            <div className="w-full flex items-center justify-center gap-2 mb-2">
+            <div className="w-full flex items-center justify-center gap-2 mb-2 flex-wrap">
               <input
                 ref={fileInputRef}
                 type="file"
@@ -271,9 +272,9 @@ export const CriminalDetailPage: React.FC = () => {
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
                 disabled={isUploadingPhoto || isDeletingPhoto}
-                className="px-2.5 py-1 text-[11px] font-typewriter font-semibold bg-[#1F2D3D] text-[#EFE9DC] hover:bg-[#141D27] rounded-xs transition-fast flex items-center gap-1.5 shadow-xs disabled:opacity-50"
+                className="min-h-[44px] px-3.5 text-xs font-typewriter font-semibold bg-[#1F2D3D] text-[#EFE9DC] hover:bg-[#141D27] rounded-xs transition-fast flex items-center gap-1.5 shadow-xs disabled:opacity-50"
               >
-                <UploadCloud size={13} />
+                <UploadCloud size={14} />
                 <span>{criminal.has_photo ? 'Change photo' : 'Upload photo'}</span>
               </button>
               {criminal.has_photo && (
@@ -281,9 +282,9 @@ export const CriminalDetailPage: React.FC = () => {
                   type="button"
                   onClick={() => setIsConfirmDeletePhotoOpen(true)}
                   disabled={isUploadingPhoto || isDeletingPhoto}
-                  className="px-2.5 py-1 text-[11px] font-typewriter text-[#B3261E] hover:text-[#921E18] hover:bg-red-50 dark:hover:bg-red-950/30 border border-[#B3261E]/30 rounded-xs transition-fast flex items-center gap-1 disabled:opacity-50"
+                  className="min-h-[44px] px-3 text-xs font-typewriter text-[#B3261E] hover:text-[#921E18] hover:bg-red-50 dark:hover:bg-red-950/30 border border-[#B3261E]/30 rounded-xs transition-fast flex items-center gap-1 disabled:opacity-50"
                 >
-                  <Trash2 size={12} />
+                  <Trash2 size={13} />
                   <span>Remove photo</span>
                 </button>
               )}

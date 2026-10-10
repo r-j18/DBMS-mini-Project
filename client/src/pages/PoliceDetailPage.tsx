@@ -81,13 +81,14 @@ export const PoliceDetailPage: React.FC = () => {
         <div className="flex items-center gap-3">
           <button
             onClick={() => navigate('/police')}
-            className="p-1.5 rounded-xs border border-[#D9D0BE] dark:border-[#2E323B] hover:bg-[#EFE9DC] dark:hover:bg-[#1F2228] text-[#1F1F1F] dark:text-[#E2DFD8] transition-fast shadow-paper"
+            className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-xs border border-[#D9D0BE] dark:border-[#2E323B] hover:bg-[#EFE9DC] dark:hover:bg-[#1F2228] text-[#1F1F1F] dark:text-[#E2DFD8] transition-fast shadow-paper"
             title="Return to roster"
+            aria-label="Return to roster"
           >
-            <ArrowLeft size={15} />
+            <ArrowLeft size={16} />
           </button>
           <div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
               <span className="font-mono text-xs text-[#B08D3C] font-bold">
                 BADGE #{officer.police_id}
               </span>

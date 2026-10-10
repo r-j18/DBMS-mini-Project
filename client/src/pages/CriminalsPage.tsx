@@ -494,8 +494,8 @@ export const CriminalsPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Filter Bar */}
-      <div className="p-3 bg-[#F6F0E0] dark:bg-[#1F2228] border border-[#D9D0BE] dark:border-[#2E323B] rounded shadow-folder flex flex-wrap items-center gap-2 text-xs">
+      {/* Filter Bar - Desktop & Tablet */}
+      <div className="hidden sm:flex p-3 bg-[#F6F0E0] dark:bg-[#1F2228] border border-[#D9D0BE] dark:border-[#2E323B] rounded shadow-folder flex-wrap items-center gap-2 text-xs">
         <div className="flex items-center gap-1.5 font-typewriter font-bold text-[#7A7A7A] mr-1 text-[11px] uppercase">
           <Filter size={12} />
           <span>INDEX FILTERS:</span>
@@ -589,7 +589,7 @@ export const CriminalsPage: React.FC = () => {
         )}
       </div>
 
-      {/* Main Table */}
+      {/* Main Table & Mobile Cards */}
       <DataTable
         data={criminals}
         columns={columns}
@@ -598,7 +598,213 @@ export const CriminalsPage: React.FC = () => {
         exportFileName="criminals-dossier-registry.csv"
         pageSize={15}
         emptyTitle="No records on file"
-        emptyDescription="No matching criminal files found in the archive for current criteria."
+        emptyDescription="No criminal records match the active registry search and filter parameters."
+        hasActiveFilters={Boolean(statusFilter || crimeFilter || officerFilter || jailFilter || courtFilter || jailedFilter)}
+        onResetFilters={resetFilters}
+        filterSheetContent={
+          <div className="space-y-4 font-typewriter">
+            <div>
+              <label className="block text-[11px] font-bold text-[#7A7A7A] uppercase mb-1">Status</label>
+              <select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                className="w-full min-h-[44px] px-3 bg-[#EFE9DC] dark:bg-[#16181C] border border-[#D9D0BE] dark:border-[#2E323B] rounded-xs text-[#1F1F1F] dark:text-[#E2DFD8] text-base"
+              >
+                <option value="">Status: All</option>
+                <option value="Open">Open</option>
+                <option value="Under Investigation">Under Investigation</option>
+                <option value="Closed">Closed</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-[11px] font-bold text-[#7A7A7A] uppercase mb-1">Crime Type</label>
+              <select
+                value={crimeFilter}
+                onChange={(e) => setCrimeFilter(e.target.value)}
+                className="w-full min-h-[44px] px-3 bg-[#EFE9DC] dark:bg-[#16181C] border border-[#D9D0BE] dark:border-[#2E323B] rounded-xs text-[#1F1F1F] dark:text-[#E2DFD8] text-base"
+              >
+                <option value="">Crime: All</option>
+                {distinctCrimes.map((crime) => (
+                  <option key={crime} value={crime}>{crime}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-[11px] font-bold text-[#7A7A7A] uppercase mb-1">Investigating Officer</label>
+              <select
+                value={officerFilter}
+                onChange={(e) => setOfficerFilter(e.target.value)}
+                className="w-full min-h-[44px] px-3 bg-[#EFE9DC] dark:bg-[#16181C] border border-[#D9D0BE] dark:border-[#2E323B] rounded-xs text-[#1F1F1F] dark:text-[#E2DFD8] text-base"
+              >
+                <option value="">Officer: All</option>
+                {officers.map((off) => (
+                  <option key={off.police_id} value={off.police_id}>
+                    {off.name} ({off.rank})
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-[11px] font-bold text-[#7A7A7A] uppercase mb-1">Detention Facility</label>
+              <select
+                value={jailFilter}
+                onChange={(e) => setJailFilter(e.target.value)}
+                className="w-full min-h-[44px] px-3 bg-[#EFE9DC] dark:bg-[#16181C] border border-[#D9D0BE] dark:border-[#2E323B] rounded-xs text-[#1F1F1F] dark:text-[#E2DFD8] text-base"
+              >
+                <option value="">Jail: All</option>
+                {distinctJails.map((j) => (
+                  <option key={j} value={j}>{j}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-[11px] font-bold text-[#7A7A7A] uppercase mb-1">Court Assignment</label>
+              <select
+                value={courtFilter}
+                onChange={(e) => setCourtFilter(e.target.value)}
+                className="w-full min-h-[44px] px-3 bg-[#EFE9DC] dark:bg-[#16181C] border border-[#D9D0BE] dark:border-[#2E323B] rounded-xs text-[#1F1F1F] dark:text-[#E2DFD8] text-base"
+              >
+                <option value="">Court Assignment: All</option>
+                <option value="true">Has Court Docket</option>
+                <option value="false">No Court Docket</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-[11px] font-bold text-[#7A7A7A] uppercase mb-1">Incarceration Status</label>
+              <select
+                value={jailedFilter}
+                onChange={(e) => setJailedFilter(e.target.value)}
+                className="w-full min-h-[44px] px-3 bg-[#EFE9DC] dark:bg-[#16181C] border border-[#D9D0BE] dark:border-[#2E323B] rounded-xs text-[#1F1F1F] dark:text-[#E2DFD8] text-base"
+              >
+                <option value="">Incarceration: All</option>
+                <option value="true">Incarcerated</option>
+                <option value="false">Not Incarcerated</option>
+              </select>
+            </div>
+          </div>
+        }
+        mobileCardRenderer={(criminal) => {
+          const initials = criminal.name
+            .split(' ')
+            .map((n) => n[0])
+            .join('')
+            .toUpperCase()
+            .slice(0, 2);
+
+          return (
+            <div className="space-y-2.5">
+              <div className="flex items-start justify-between gap-2">
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <div className="w-10 h-10 rounded-xs overflow-hidden shrink-0 flex items-center justify-center relative border border-[#D9D0BE] dark:border-[#3A3F4D]">
+                    {criminal.has_photo ? (
+                      <img
+                        src={api.getCriminalThumbUrl(criminal.criminal_id, criminal.photo_updated_at)}
+                        alt={`Photo of ${criminal.name}`}
+                        width={40}
+                        height={40}
+                        loading="lazy"
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          (e.target as HTMLElement).style.display = 'none';
+                          const fallback = (e.target as HTMLElement).nextElementSibling as HTMLElement;
+                          if (fallback) fallback.style.display = 'flex';
+                        }}
+                      />
+                    ) : null}
+                    <div
+                      className={`w-full h-full bg-[#E6DFCD] dark:bg-[#15171B] items-center justify-center font-typewriter font-bold text-xs text-[#7A6C58] dark:text-[#A09D95] select-none ${
+                        criminal.has_photo ? 'hidden' : 'flex'
+                      }`}
+                    >
+                      {initials}
+                    </div>
+                  </div>
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <span className="font-mono text-[#B3261E] font-bold text-xs">
+                        #{criminal.criminal_id}
+                      </span>
+                      <span className="font-typewriter font-bold text-sm text-[#1F1F1F] dark:text-[#E2DFD8] truncate">
+                        {criminal.name}
+                      </span>
+                      <span className="font-mono text-xs text-[#7A7A7A]">
+                        ({criminal.age}y)
+                      </span>
+                    </div>
+                    <div className="text-xs text-[#7A7A7A] truncate font-typewriter mt-0.5">
+                      Charge: <span className="text-[#1F1F1F] dark:text-[#E2DFD8] font-medium">{criminal.crime}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <StatusBadge status={criminal.investigation_status} size="sm" />
+              </div>
+
+              <div className="grid grid-cols-2 gap-2 text-xs pt-1 border-t border-[#D9D0BE]/60 dark:border-[#2E323B]/60">
+                <div>
+                  <span className="text-[10px] uppercase font-bold text-[#7A7A7A] block">Lead Officer</span>
+                  <span className="font-typewriter text-[#1F1F1F] dark:text-[#E2DFD8] truncate block">
+                    {criminal.officer_name ? `${criminal.officer_rank || ''} ${criminal.officer_name}` : 'Unassigned'}
+                  </span>
+                </div>
+                <div>
+                  <span className="text-[10px] uppercase font-bold text-[#7A7A7A] block">Status & Facility</span>
+                  <div className="flex items-center gap-1 flex-wrap">
+                    {criminal.jail_location ? (
+                      <span className="px-1.5 py-0.2 bg-red-100 dark:bg-red-950/40 text-[#B3261E] font-mono text-[10px] font-bold rounded-xs border border-red-200 dark:border-red-900/40">
+                        {criminal.jail_location}
+                      </span>
+                    ) : criminal.court_room_number ? (
+                      <span className="px-1.5 py-0.2 bg-amber-100 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 font-mono text-[10px] font-bold rounded-xs border border-amber-200 dark:border-amber-900/40">
+                        Chamber #{criminal.court_room_number}
+                      </span>
+                    ) : (
+                      <span className="text-[#7A7A7A] italic text-[11px]">No active custody</span>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Action Buttons with min 44px touch targets */}
+              <div
+                className="flex items-center justify-end gap-2 pt-2 border-t border-[#D9D0BE]/60 dark:border-[#2E323B]/60"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <button
+                  type="button"
+                  onClick={() => navigate(`/criminals/${criminal.criminal_id}`)}
+                  className="min-h-[44px] px-3 flex items-center justify-center gap-1 text-xs font-typewriter font-semibold border border-[#D9D0BE] dark:border-[#2E323B] bg-[#EFE9DC] dark:bg-[#1F2228] text-[#1F1F1F] dark:text-[#E2DFD8] rounded-xs"
+                  aria-label={`View dossier for ${criminal.name}`}
+                >
+                  <Eye size={14} className="text-[#B08D3C]" />
+                  <span>DOSSIER</span>
+                </button>
+                {role === 'admin' && (
+                  <>
+                    <button
+                      type="button"
+                      onClick={(e) => handleOpenEdit(criminal, e)}
+                      className="min-h-[44px] px-3 flex items-center justify-center gap-1 text-xs font-typewriter font-semibold border border-[#D9D0BE] dark:border-[#2E323B] bg-[#EFE9DC] dark:bg-[#1F2228] text-[#1F1F1F] dark:text-[#E2DFD8] rounded-xs"
+                      aria-label={`Edit ${criminal.name}`}
+                    >
+                      <Edit2 size={14} />
+                      <span>EDIT</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={(e) => handleOpenDelete(criminal, e)}
+                      className="min-h-[44px] px-3 flex items-center justify-center gap-1 text-xs font-typewriter font-semibold border border-red-300 dark:border-red-900/60 bg-red-50 dark:bg-red-950/30 text-[#B3261E] rounded-xs"
+                      aria-label={`Purge ${criminal.name}`}
+                    >
+                      <Trash2 size={14} />
+                      <span>PURGE</span>
+                    </button>
+                  </>
+                )}
+              </div>
+            </div>
+          );
+        }}
       />
 
       {/* Add / Edit Drawer */}
@@ -616,11 +822,13 @@ export const CriminalsPage: React.FC = () => {
             </label>
             <input
               type="number"
+              inputMode="numeric"
+              min="1"
               value={formData.criminal_id}
               disabled={!!editingCriminal}
               onChange={(e) => setFormData({ ...formData, criminal_id: e.target.value })}
               placeholder="e.g. 207"
-              className={`w-full h-8 px-2.5 font-mono bg-[#EFE9DC] dark:bg-[#16181C] border rounded-xs text-[#1F1F1F] dark:text-[#E2DFD8] disabled:opacity-60 focus:outline-none ${
+              className={`w-full min-h-[44px] px-3 font-mono text-base sm:text-xs bg-[#EFE9DC] dark:bg-[#16181C] border rounded-xs text-[#1F1F1F] dark:text-[#E2DFD8] disabled:opacity-60 focus:outline-none focus:ring-1 focus:ring-[#B08D3C] ${
                 formErrors.criminal_id ? 'border-[#B3261E]' : 'border-[#D9D0BE] dark:border-[#2E323B]'
               }`}
             />
@@ -636,10 +844,11 @@ export const CriminalsPage: React.FC = () => {
             </label>
             <input
               type="text"
+              autoComplete="off"
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
               placeholder="Full name"
-              className={`w-full h-8 px-2.5 bg-[#EFE9DC] dark:bg-[#16181C] border rounded-xs text-[#1F1F1F] dark:text-[#E2DFD8] focus:outline-none ${
+              className={`w-full min-h-[44px] px-3 text-base sm:text-xs bg-[#EFE9DC] dark:bg-[#16181C] border rounded-xs text-[#1F1F1F] dark:text-[#E2DFD8] focus:outline-none focus:ring-1 focus:ring-[#B08D3C] ${
                 formErrors.name ? 'border-[#B3261E]' : 'border-[#D9D0BE] dark:border-[#2E323B]'
               }`}
             />
@@ -655,10 +864,13 @@ export const CriminalsPage: React.FC = () => {
             </label>
             <input
               type="number"
+              inputMode="numeric"
+              min="18"
+              max="100"
               value={formData.age}
               onChange={(e) => setFormData({ ...formData, age: e.target.value })}
               placeholder="e.g. 32"
-              className={`w-full h-8 px-2.5 font-mono bg-[#EFE9DC] dark:bg-[#16181C] border rounded-xs text-[#1F1F1F] dark:text-[#E2DFD8] focus:outline-none ${
+              className={`w-full min-h-[44px] px-3 font-mono text-base sm:text-xs bg-[#EFE9DC] dark:bg-[#16181C] border rounded-xs text-[#1F1F1F] dark:text-[#E2DFD8] focus:outline-none focus:ring-1 focus:ring-[#B08D3C] ${
                 formErrors.age ? 'border-[#B3261E]' : 'border-[#D9D0BE] dark:border-[#2E323B]'
               }`}
             />
@@ -677,7 +889,7 @@ export const CriminalsPage: React.FC = () => {
               value={formData.crime}
               onChange={(e) => setFormData({ ...formData, crime: e.target.value })}
               placeholder="e.g. Robbery, Theft, Cyber Fraud"
-              className={`w-full h-8 px-2.5 bg-[#EFE9DC] dark:bg-[#16181C] border rounded-xs text-[#1F1F1F] dark:text-[#E2DFD8] focus:outline-none ${
+              className={`w-full min-h-[44px] px-3 text-base sm:text-xs bg-[#EFE9DC] dark:bg-[#16181C] border rounded-xs text-[#1F1F1F] dark:text-[#E2DFD8] focus:outline-none focus:ring-1 focus:ring-[#B08D3C] ${
                 formErrors.crime ? 'border-[#B3261E]' : 'border-[#D9D0BE] dark:border-[#2E323B]'
               }`}
             />
@@ -694,7 +906,7 @@ export const CriminalsPage: React.FC = () => {
             <select
               value={formData.investigating_officer}
               onChange={(e) => setFormData({ ...formData, investigating_officer: e.target.value })}
-              className={`w-full h-8 px-2 bg-[#EFE9DC] dark:bg-[#16181C] border rounded-xs text-[#1F1F1F] dark:text-[#E2DFD8] focus:outline-none ${
+              className={`w-full min-h-[44px] px-3 text-base sm:text-xs bg-[#EFE9DC] dark:bg-[#16181C] border rounded-xs text-[#1F1F1F] dark:text-[#E2DFD8] focus:outline-none focus:ring-1 focus:ring-[#B08D3C] ${
                 formErrors.investigating_officer ? 'border-[#B3261E]' : 'border-[#D9D0BE] dark:border-[#2E323B]'
               }`}
             >
@@ -723,7 +935,7 @@ export const CriminalsPage: React.FC = () => {
                   investigation_status: e.target.value as any,
                 })
               }
-              className="w-full h-8 px-2 bg-[#EFE9DC] dark:bg-[#16181C] border border-[#D9D0BE] dark:border-[#2E323B] rounded-xs text-[#1F1F1F] dark:text-[#E2DFD8] focus:outline-none"
+              className="w-full min-h-[44px] px-3 text-base sm:text-xs bg-[#EFE9DC] dark:bg-[#16181C] border border-[#D9D0BE] dark:border-[#2E323B] rounded-xs text-[#1F1F1F] dark:text-[#E2DFD8] focus:outline-none focus:ring-1 focus:ring-[#B08D3C]"
             >
               <option value="Open">Open</option>
               <option value="Under Investigation">Under Investigation</option>
@@ -767,7 +979,7 @@ export const CriminalsPage: React.FC = () => {
                 type="button"
                 onClick={handleRetryPhoto}
                 disabled={isSubmitting}
-                className="px-3 py-1.5 bg-amber-700 hover:bg-amber-800 text-white font-typewriter text-xs font-bold rounded-xs shadow-xs"
+                className="min-h-[44px] px-3.5 bg-amber-700 hover:bg-amber-800 text-white font-typewriter text-xs font-bold rounded-xs shadow-xs"
               >
                 Retry Photo Upload
               </button>
@@ -779,14 +991,14 @@ export const CriminalsPage: React.FC = () => {
               type="button"
               onClick={() => setIsDrawerOpen(false)}
               disabled={isSubmitting}
-              className="px-3 py-1.5 border border-[#D9D0BE] dark:border-[#2E323B] rounded-xs text-[#1F1F1F] dark:text-[#E2DFD8] hover:bg-[#EFE9DC] disabled:opacity-50"
+              className="min-h-[44px] px-4 border border-[#D9D0BE] dark:border-[#2E323B] rounded-xs text-[#1F1F1F] dark:text-[#E2DFD8] hover:bg-[#EFE9DC] disabled:opacity-50 font-typewriter text-xs"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={isSubmitting}
-              className="px-3 py-1.5 bg-[#1F2D3D] text-[#EFE9DC] hover:bg-[#141D27] rounded-xs font-bold disabled:opacity-50 shadow-paper"
+              className="min-h-[44px] px-4 bg-[#1F2D3D] text-[#EFE9DC] hover:bg-[#141D27] rounded-xs font-bold disabled:opacity-50 shadow-paper font-typewriter text-xs"
             >
               {isSubmitting ? 'Recording...' : editingCriminal ? 'Save Changes' : 'File Case'}
             </button>
