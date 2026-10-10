@@ -266,3 +266,67 @@ An admin can manage users via the `/users` dashboard. Alternatively, you can gen
 cd server
 node scripts/create-user.js <username> <password> <role>
 ```
+
+---
+
+## Criminal Photo Upload & Preview Deployment (`feature/criminal-photos`)
+
+This branch introduces binary mugshot identification photo management for criminal records, optimized for Vercel Serverless and TiDB Cloud.
+
+### Architecture & Capabilities
+1. **BLOB Database Storage**:
+   - Vercel serverless execution is read-only and ephemeral. Photos are stored directly in TiDB / MySQL as binary data (`MEDIUMBLOB` for compressed full photo, `BLOB` for 160x160 thumbnail).
+   - Deleting a criminal automatically cascades to remove the corresponding photo record (`ON DELETE CASCADE`).
+   - Query efficiency: `photo_data` and `thumb_data` BLOB columns are **never** selected in list or join queries. The list and dossier detail endpoints only `LEFT JOIN CRIMINAL_PHOTO` for `has_photo` and `photo_updated_at`.
+2. **Processing Pipeline**:
+   - `multer` memory storage with a strict 4 MB limit on field `photo`.
+   - Magic byte verification using `file-type` (permits only JPEG, PNG, WebP; strictly rejects SVG, GIF, PDF, HTML, or disguised files).
+   - Server-side compression via `sharp`: strips all metadata/EXIF/GPS, auto-rotates, fits within 600x600 WebP at quality stepping (80 -> 70 -> 60 -> 50) guaranteeing `<= 150 KB`. Generates a 160x160 cover-cropped WebP thumbnail `<= 15 KB`.
+   - Client-side pre-compression: draws to canvas (max 800px on longest side, quality 0.8 WebP/JPEG) ensuring uploads are well under 1 MB.
+3. **Role-Based Access Control**:
+   - **Admin**: Can upload, change, and delete mugshot photos.
+   - **Viewer**: Read-only access to view served photos and thumbnails. Upload/delete controls are hidden and return `403 Forbidden` if accessed directly. Unauthenticated requests return `401 Unauthorized`.
+4. **Caching & Cache-Busting**:
+   - Full photo and thumbnail endpoints set `Cache-Control: private, max-age=300`, `X-Content-Type-Options: nosniff`, and custom ETags (`photo_id + uploaded_at`). Honors `If-None-Match` with `304 Not Modified`.
+   - Client URLs include cache-busting query strings `?v=<photo_updated_at>`.
+
+### New Environment Variables
+
+Add to your environment configuration as needed:
+
+| Variable | Default | Description |
+| :--- | :--- | :--- |
+| `DB_SSL` | `false` | Set to `true` to enable TLS in mysql2 (`{ minVersion: 'TLSv1.2', rejectUnauthorized: true }`) for TiDB Cloud. Local MySQL works when unset. |
+| `DB_CONNECTION_LIMIT` | `2` | Connection pool limit for serverless instances (module-scoped pool reuse). |
+
+### Database Migration
+
+To apply the photo storage table to an existing database:
+```bash
+# Production / Local manual migration:
+mysql -u <user> -p <db_name> < db/migrations/002_criminal_photo.sql
+```
+
+### Preview Deployment with TiDB Cloud
+
+Vercel Preview deployments use a dedicated, isolated TiDB database (e.g. `criminal_records_preview`) via Preview-scoped environment variables.
+
+1. Create a local, gitignored `.env.preview` file:
+   ```env
+   DB_HOST=gateway01.ap-southeast-1.prod.aws.tidbcloud.com
+   DB_PORT=4000
+   DB_USER=xxxx.root
+   DB_PASSWORD=your_preview_password
+   DB_NAME=criminal_records_preview
+   DB_SSL=true
+   ```
+2. Run the automated preview migration script:
+   ```bash
+   ./db/apply-preview.sh
+   ```
+   This script runs built-in safety checks (refuses to run if the database target resembles production), and applies the following in order:
+   - `db/schema.sql`
+   - `db/seed.sql`
+   - `db/migrations/001_users_audit_log.sql`
+   - `db/migrations/002_criminal_photo.sql`
+
