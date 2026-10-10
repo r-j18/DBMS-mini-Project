@@ -72,7 +72,7 @@ export const DashboardPage: React.FC = () => {
   if (loading || !data) {
     return (
       <div className="space-y-6">
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-6 gap-3">
           {Array.from({ length: 6 }).map((_, i) => (
             <div key={i} className="p-4 bg-[#F6F0E0] dark:bg-[#1F2228] border border-[#D9D0BE] dark:border-[#2E323B] rounded">
               <Skeleton className="h-4 w-20 mb-2" />
@@ -125,7 +125,7 @@ export const DashboardPage: React.FC = () => {
 
         <button
           onClick={() => navigate('/board')}
-          className="px-3 py-1.5 bg-[#1F2D3D] hover:bg-[#141D27] text-[#EFE9DC] font-typewriter text-xs font-bold rounded-xs flex items-center gap-1.5 transition-fast shrink-0 shadow-paper"
+          className="w-full sm:w-auto min-h-[44px] px-3.5 py-1.5 bg-[#1F2D3D] hover:bg-[#141D27] text-[#EFE9DC] font-typewriter text-xs font-bold rounded-xs flex items-center justify-center gap-1.5 transition-fast shrink-0 shadow-paper"
         >
           <Pin size={12} />
           <span>OPEN CASE BOARD</span>
@@ -137,7 +137,7 @@ export const DashboardPage: React.FC = () => {
         variants={containerVariants}
         initial="hidden"
         animate="show"
-        className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3.5"
+        className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-6 gap-3.5"
       >
         {/* Card 1: Total Criminals */}
         <motion.div variants={cardVariants}>
@@ -297,7 +297,7 @@ export const DashboardPage: React.FC = () => {
             </div>
             <button
               onClick={() => navigate('/jail')}
-              className="font-typewriter text-xs text-[#1F2D3D] dark:text-[#C9D1D9] hover:text-[#B3261E] flex items-center gap-1 font-semibold transition-fast"
+              className="min-h-[44px] px-2 font-typewriter text-xs text-[#1F2D3D] dark:text-[#C9D1D9] hover:text-[#B3261E] flex items-center gap-1 font-semibold transition-fast"
             >
               <span>View Jails</span>
               <ArrowRight size={13} />
@@ -341,7 +341,7 @@ export const DashboardPage: React.FC = () => {
             </div>
             <button
               onClick={() => navigate('/police')}
-              className="font-typewriter text-xs text-[#1F2D3D] dark:text-[#C9D1D9] hover:text-[#B3261E] flex items-center gap-1 font-semibold transition-fast"
+              className="min-h-[44px] px-2 font-typewriter text-xs text-[#1F2D3D] dark:text-[#C9D1D9] hover:text-[#B3261E] flex items-center gap-1 font-semibold transition-fast"
             >
               <span>View Roster</span>
               <ArrowRight size={13} />
@@ -349,7 +349,7 @@ export const DashboardPage: React.FC = () => {
           </div>
 
           <div className="overflow-x-auto">
-            <table className="w-full text-xs text-left">
+            <table className="w-full text-xs text-left min-w-[380px]">
               <thead>
                 <tr className="border-b border-[#D9D0BE] dark:border-[#2E323B] font-typewriter text-[10px] uppercase tracking-wider text-[#7A7A7A]">
                   <th className="py-1.5 font-bold">Badge ID</th>
@@ -402,7 +402,7 @@ export const DashboardPage: React.FC = () => {
           </div>
           <button
             onClick={() => navigate('/criminals')}
-            className="font-typewriter text-xs text-[#1F2D3D] dark:text-[#C9D1D9] hover:text-[#B3261E] flex items-center gap-1 font-semibold transition-fast"
+            className="min-h-[44px] px-2 font-typewriter text-xs text-[#1F2D3D] dark:text-[#C9D1D9] hover:text-[#B3261E] flex items-center gap-1 font-semibold transition-fast"
           >
             <span>All Dossiers</span>
             <ArrowRight size={13} />
@@ -410,7 +410,7 @@ export const DashboardPage: React.FC = () => {
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full text-xs text-left">
+          <table className="w-full text-xs text-left min-w-[650px]">
             <thead>
               <tr className="border-b border-[#D9D0BE] dark:border-[#2E323B] font-typewriter text-[10px] uppercase tracking-wider text-[#7A7A7A]">
                 <th className="py-2 font-bold">Case ID</th>

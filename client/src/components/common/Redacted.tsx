@@ -26,13 +26,22 @@ export const Redacted: React.FC<RedactedProps> = ({ children, className = '', pe
 
   return (
     <span
+      role="button"
       tabIndex={0}
+      aria-expanded={isRevealed}
+      onClick={() => setIsRevealed((prev) => !prev)}
       onMouseEnter={() => setIsRevealed(true)}
       onMouseLeave={() => setIsRevealed(false)}
       onFocus={() => setIsRevealed(true)}
       onBlur={() => setIsRevealed(false)}
-      className={`relative inline-block cursor-help transition-all duration-200 select-all ${className}`}
-      title="Confidential Officer Information (Hover or click to unredact)"
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          setIsRevealed((prev) => !prev);
+        }
+      }}
+      className={`relative inline-block cursor-pointer transition-all duration-200 select-all ${className}`}
+      title="Confidential Officer Information (Tap or hover to toggle redacted state)"
     >
       <span className={isRevealed ? 'opacity-100 transition-opacity duration-200' : 'opacity-0 select-none'}>
         {children}
