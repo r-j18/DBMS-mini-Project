@@ -11,7 +11,10 @@ import {
   Pin,
   FolderClosed,
   FolderOpen,
+  UserCog,
+  FileClock,
 } from 'lucide-react';
+import { useAuth } from '../../context/AuthContext';
 
 interface SidebarProps {
   darkMode: boolean;
@@ -21,6 +24,8 @@ interface SidebarProps {
 }
 
 export const Sidebar: React.FC<SidebarProps> = () => {
+  const { role } = useAuth();
+  
   const navItems = [
     { to: '/', label: 'DASHBOARD', tabCode: 'IDX-01', icon: LayoutDashboard },
     { to: '/board', label: 'CASE BOARD', tabCode: 'INV-BD', icon: Pin },
@@ -31,6 +36,13 @@ export const Sidebar: React.FC<SidebarProps> = () => {
     { to: '/queries', label: 'QUERY EXPLORER', tabCode: 'SQL-XP', icon: Code2 },
     { to: '/schema', label: 'DATA SCHEMA', tabCode: 'SCH-DB', icon: Database },
   ];
+
+  if (role === 'admin') {
+    navItems.push(
+      { to: '/users', label: 'PERSONNEL', tabCode: 'ADM-US', icon: UserCog },
+      { to: '/audit-log', label: 'AUDIT LOG', tabCode: 'ADM-AL', icon: FileClock }
+    );
+  }
 
   return (
     <aside className="w-60 bg-[#1F2D3D] text-[#EFE9DC] border-r border-[#141D27] flex flex-col shrink-0 select-none z-30 shadow-md">

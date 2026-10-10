@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useAuth } from '../context/AuthContext';
 import { api } from '../services/api';
 import { Criminal, Police } from '../types';
 import { CaseBoard } from '../components/board/CaseBoard';
@@ -6,6 +7,7 @@ import { Skeleton } from '../components/common/Skeleton';
 import { useToast } from '../components/common/Toast';
 
 export const CaseBoardPage: React.FC = () => {
+  const { role } = useAuth();
   const [criminals, setCriminals] = useState<Criminal[]>([]);
   const [officers, setOfficers] = useState<Police[]>([]);
   const [loading, setLoading] = useState(true);

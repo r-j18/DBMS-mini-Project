@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useMemo } from 'react';
+import { useAuth } from '../context/AuthContext';
 import { ColumnDef } from '@tanstack/react-table';
 import { Plus, Edit2, Trash2, Lock, Building } from 'lucide-react';
 import { api } from '../services/api';
@@ -9,6 +10,7 @@ import { ConfirmDialog } from '../components/common/ConfirmDialog';
 import { useToast } from '../components/common/Toast';
 
 export const JailPage: React.FC = () => {
+  const { role } = useAuth();
   const [jailRecords, setJailRecords] = useState<JailRecord[]>([]);
   const [locations, setLocations] = useState<JailLocationGroup[]>([]);
   const [unassignedCriminals, setUnassignedCriminals] = useState<
@@ -236,20 +238,24 @@ export const JailPage: React.FC = () => {
         header: 'Actions',
         cell: ({ row }) => (
           <div className="flex items-center gap-1.5">
-            <button
+            {role === 'admin' && (
+<button
               onClick={() => handleOpenEdit(row.original)}
               className="p-1 rounded text-[#7A7A7A] hover:text-[#1F1F1F] dark:hover:text-white hover:bg-[#EFE9DC] dark:hover:bg-[#2E323B] transition-fast"
               title="Edit Incarceration Particulars"
             >
               <Edit2 size={13} />
             </button>
-            <button
+)}
+            {role === 'admin' && (
+<button
               onClick={() => setDeleteTarget(row.original)}
               className="p-1 rounded text-[#B3261E] hover:text-[#921E18] hover:bg-red-50 dark:hover:bg-red-950/40 transition-fast"
               title="Remove Sentence Log"
             >
               <Trash2 size={13} />
             </button>
+)}
           </div>
         ),
       },
@@ -295,13 +301,15 @@ export const JailPage: React.FC = () => {
             </button>
           </div>
 
-          <button
+          {role === 'admin' && (
+<button
             onClick={handleOpenAssign}
             className="h-8 px-3 flex items-center gap-1.5 font-typewriter text-xs font-bold bg-[#1F2D3D] text-[#EFE9DC] hover:bg-[#141D27] rounded-xs transition-fast shrink-0 shadow-paper"
           >
             <Plus size={14} />
             <span>COMMITT TO PRISON</span>
           </button>
+)}
         </div>
       </div>
 

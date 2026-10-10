@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useMemo } from 'react';
+import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { ColumnDef } from '@tanstack/react-table';
 import { Plus, Edit2, Trash2, Eye, Filter, RotateCcw, Pin } from 'lucide-react';
@@ -11,6 +12,7 @@ import { StatusBadge } from '../components/common/StatusBadge';
 import { useToast } from '../components/common/Toast';
 
 export const CriminalsPage: React.FC = () => {
+  const { role } = useAuth();
   const [criminals, setCriminals] = useState<Criminal[]>([]);
   const [officers, setOfficers] = useState<Police[]>([]);
   const [loading, setLoading] = useState(true);
@@ -316,20 +318,24 @@ export const CriminalsPage: React.FC = () => {
             >
               <Eye size={13} />
             </button>
-            <button
-              onClick={(e) => handleOpenEdit(row.original, e)}
-              className="p-1 rounded text-[#7A7A7A] hover:text-[#1F1F1F] dark:hover:text-white hover:bg-[#EFE9DC] dark:hover:bg-[#2E323B] transition-fast"
-              title="Edit Dossier"
-            >
-              <Edit2 size={13} />
-            </button>
-            <button
-              onClick={(e) => handleOpenDelete(row.original, e)}
-              className="p-1 rounded text-[#B3261E] hover:text-[#921E18] hover:bg-red-50 dark:hover:bg-red-950/40 transition-fast"
-              title="Purge Record"
-            >
-              <Trash2 size={13} />
-            </button>
+            {role === 'admin' && (
+              <>
+                <button
+                  onClick={(e) => handleOpenEdit(row.original, e)}
+                  className="p-1 rounded text-[#7A7A7A] hover:text-[#1F1F1F] dark:hover:text-white hover:bg-[#EFE9DC] dark:hover:bg-[#2E323B] transition-fast"
+                  title="Edit Dossier"
+                >
+                  <Edit2 size={13} />
+                </button>
+                <button
+                  onClick={(e) => handleOpenDelete(row.original, e)}
+                  className="p-1 rounded text-[#B3261E] hover:text-[#921E18] hover:bg-red-50 dark:hover:bg-red-950/40 transition-fast"
+                  title="Purge Record"
+                >
+                  <Trash2 size={13} />
+                </button>
+              </>
+            )}
           </div>
         ),
       },
@@ -359,13 +365,15 @@ export const CriminalsPage: React.FC = () => {
             <span>CASE BOARD</span>
           </button>
 
-          <button
-            onClick={handleOpenAdd}
-            className="h-8 px-3 flex items-center gap-1.5 font-typewriter text-xs font-bold bg-[#1F2D3D] text-[#EFE9DC] hover:bg-[#141D27] rounded-xs transition-fast shrink-0 shadow-paper"
-          >
-            <Plus size={14} />
-            <span>FILE NEW CASE</span>
-          </button>
+          {role === 'admin' && (
+            <button
+              onClick={handleOpenAdd}
+              className="h-8 px-3 flex items-center gap-1.5 font-typewriter text-xs font-bold bg-[#1F2D3D] text-[#EFE9DC] hover:bg-[#141D27] rounded-xs transition-fast shrink-0 shadow-paper"
+            >
+              <Plus size={14} />
+              <span>FILE NEW CASE</span>
+            </button>
+          )}
         </div>
       </div>
 

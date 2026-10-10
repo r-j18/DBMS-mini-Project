@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useAuth } from '../context/AuthContext';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   ArrowLeft,
@@ -23,6 +24,7 @@ import { Skeleton } from '../components/common/Skeleton';
 import { useToast } from '../components/common/Toast';
 
 export const CriminalDetailPage: React.FC = () => {
+  const { role } = useAuth();
   const { id } = useParams<{ id: string }>();
   const [profile, setProfile] = useState<CriminalProfile | null>(null);
   const [loading, setLoading] = useState(true);
@@ -291,7 +293,7 @@ export const CriminalDetailPage: React.FC = () => {
                   <div className="flex items-center gap-2">
                     <Phone size={13} className="text-[#B08D3C] shrink-0" />
                     <span className="font-typewriter text-[11px] text-[#7A7A7A]">Direct Line:</span>
-                    <Redacted>
+                    <Redacted permanent={role !== 'admin'}>
                       <span className="font-mono font-bold text-[#1F1F1F] dark:text-[#E2DFD8]">
                         {officer.number}
                       </span>
@@ -301,7 +303,7 @@ export const CriminalDetailPage: React.FC = () => {
                   <div className="flex items-center gap-2">
                     <MapPin size={13} className="text-[#B08D3C] shrink-0" />
                     <span className="font-typewriter text-[11px] text-[#7A7A7A]">Station / Address:</span>
-                    <Redacted>
+                    <Redacted permanent={role !== 'admin'}>
                       <span className="font-bold text-[#1F1F1F] dark:text-[#E2DFD8]">
                         {officer.address}
                       </span>

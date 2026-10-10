@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useMemo } from 'react';
+import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { ColumnDef } from '@tanstack/react-table';
 import { Plus, Edit2, Trash2, Eye, Filter, RotateCcw, Shield } from 'lucide-react';
@@ -10,6 +11,7 @@ import { ConfirmDialog } from '../components/common/ConfirmDialog';
 import { useToast } from '../components/common/Toast';
 
 export const PolicePage: React.FC = () => {
+  const { role } = useAuth();
   const [officers, setOfficers] = useState<Police[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -83,8 +85,8 @@ export const PolicePage: React.FC = () => {
       name: officer.name,
       branch: officer.branch,
       age: String(officer.age),
-      number: officer.number,
-      address: officer.address,
+      number: officer.number || '',
+      address: officer.address || '',
     });
     setFormErrors({});
     setIsDrawerOpen(true);
@@ -281,7 +283,9 @@ export const PolicePage: React.FC = () => {
             >
               <Eye size={13} />
             </button>
-            <button
+            {role === 'admin' && (
+              <>
+<button
               onClick={(e) => handleOpenEdit(row.original, e)}
               className="p-1 rounded text-[#7A7A7A] hover:text-[#1F1F1F] dark:hover:text-white hover:bg-[#EFE9DC] dark:hover:bg-[#2E323B] transition-fast"
               title="Edit Officer"
@@ -295,6 +299,8 @@ export const PolicePage: React.FC = () => {
             >
               <Trash2 size={13} />
             </button>
+              </>
+            )}
           </div>
         ),
       },
@@ -315,13 +321,15 @@ export const PolicePage: React.FC = () => {
           </p>
         </div>
 
-        <button
+        {role === 'admin' && (
+<button
           onClick={handleOpenAdd}
           className="h-8 px-3 flex items-center gap-1.5 font-typewriter text-xs font-bold bg-[#1F2D3D] text-[#EFE9DC] hover:bg-[#141D27] rounded-xs transition-fast shrink-0 shadow-paper"
         >
           <Plus size={14} />
           <span>APPOINT OFFICER</span>
         </button>
+)}
       </div>
 
       {/* Filter Bar */}

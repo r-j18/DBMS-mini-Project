@@ -98,11 +98,15 @@ app.use((err, req, res, next) => {
   res.status(status).json({ error: err.message || 'Internal server error' });
 });
 
-app.listen(PORT, async () => {
-  console.log(`===============================================`);
-  console.log(` Criminal Record Management System - Backend `);
-  console.log(` Server running on http://localhost:${PORT}`);
-  console.log(` Security: Helmet, CSRF protection, RBAC, JWT`);
-  console.log(`===============================================`);
-  await testConnection();
-});
+if (process.env.NODE_ENV !== 'production' || process.env.VERCEL_ENV === undefined) {
+  app.listen(PORT, async () => {
+    console.log(`===============================================`);
+    console.log(` Criminal Record Management System - Backend `);
+    console.log(` Server running on http://localhost:${PORT}`);
+    console.log(` Security: Helmet, CSRF protection, RBAC, JWT`);
+    console.log(`===============================================`);
+    await testConnection();
+  });
+}
+
+export default app;

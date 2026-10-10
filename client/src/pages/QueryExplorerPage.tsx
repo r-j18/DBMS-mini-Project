@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useAuth } from '../context/AuthContext';
 import {
   Play,
   Clock,
@@ -14,6 +15,7 @@ import { Skeleton } from '../components/common/Skeleton';
 import { useToast } from '../components/common/Toast';
 
 export const QueryExplorerPage: React.FC = () => {
+  const { role } = useAuth();
   const [queries, setQueries] = useState<QueryDefinition[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'All' | 'Joins' | 'Aggregates' | 'Subqueries'>('All');
@@ -257,6 +259,9 @@ export const QueryExplorerPage: React.FC = () => {
         })}
       </div>
 
+      
+      {role === 'admin' && (
+      <>
       {/* Read-Only SQL Console Section */}
       <div className="p-5 bg-[#F6F0E0] dark:bg-[#1F2228] border border-[#D9D0BE] dark:border-[#2E323B] rounded shadow-folder space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-[#D9D0BE] dark:border-[#2E323B]">
@@ -380,6 +385,8 @@ export const QueryExplorerPage: React.FC = () => {
           </div>
         )}
       </div>
+      </>
+      )}
     </div>
   );
 };

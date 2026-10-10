@@ -62,35 +62,66 @@ The database is seeded with exact benchmark data:
 
 ## Setup & Installation
 
-### Prerequisites
-- Node.js (v18.0.0 or higher, v20+ recommended)
-- MySQL Server (v8.0+)
+### Prerequisites Installation (Windows & Ubuntu)
+To run this project on a completely new system, you must first install **Node.js** and **MySQL Server**.
 
-### 1. Database Setup
-Log in to MySQL and load the schema and seed scripts:
+#### For Windows:
+1. **Install Node.js**: Download and run the installer from [nodejs.org](https://nodejs.org/).
+2. **Install MySQL**: Download the [MySQL Installer](https://dev.mysql.com/downloads/installer/) and run it. Choose "Server Only" or "Developer Default". Remember the root password you set during installation!
+3. **Add MySQL to PATH**: Ensure `C:\Program Files\MySQL\MySQL Server 8.0\bin` (or similar) is added to your System Environment Variables `PATH` so you can run the `mysql` command from the terminal.
+
+#### For Ubuntu / Debian Linux:
+Run the following commands in your terminal to install both:
+```bash
+# Update package list
+sudo apt update
+
+# Install Node.js and npm
+sudo apt install -y nodejs npm
+
+# Install MySQL Server
+sudo apt install -y mysql-server
+
+# Secure your MySQL installation and set a root password
+sudo mysql_secure_installation
+```
+
+---
+
+### 1. Database Configuration (Minimal Setup)
+
+Once MySQL is installed, open your terminal (or Command Prompt) in the root of the project directory and run the following commands to create the database and seed the data.
+
+*(When prompted, enter your MySQL root password)*:
 
 ```bash
-# Load schema (creates database crm_db and tables)
+# 1. Load the database schema (creates the database and tables)
 mysql -u root -p < db/schema.sql
 
-# Populate initial benchmark records
+# 2. Populate the tables with demo data and user accounts
 mysql -u root -p < db/seed.sql
 ```
 
-### 2. Environment Configuration
-Copy `.env.example` to `server/.env`:
+### 2. Environment Variables
 
+Navigate into the `server` directory and copy the `.env.example` file to create your local `.env` file:
+
+**Ubuntu / Mac:**
 ```bash
 cp server/.env.example server/.env
 ```
+**Windows:**
+```cmd
+copy server\.env.example server\.env
+```
 
-Verify your MySQL credentials in `server/.env`:
+Open `server/.env` in a text editor and **update the MySQL password** to match the root password you set during installation:
 ```env
 PORT=5000
 DB_HOST=localhost
 DB_PORT=3306
 DB_USER=root
-DB_PASSWORD=your_mysql_password
+DB_PASSWORD=your_actual_mysql_password   <-- UPDATE THIS!
 DB_NAME=crm_db
 
 # Read-only user for SQL console
@@ -98,42 +129,42 @@ DB_READONLY_USER=crm_readonly
 DB_READONLY_PASSWORD=crm_readonly_pass
 ```
 
-### 3. Install Dependencies
+### 3. Install NPM Dependencies
+
+From the root project folder, install the necessary packages for both the backend and frontend:
+
 ```bash
+# Install root utility dependencies
+npm install
+
 # Install server dependencies
-cd server && npm install && cd ..
+cd server
+npm install
+cd ..
 
 # Install client dependencies
-cd client && npm install && cd ..
+cd client
+npm install
+cd ..
 ```
 
 ---
 
 ## Running the Application
 
-After setup, run the application locally with two commands (or one combined command):
+After the setup is complete, you can start both the frontend and backend servers simultaneously from the root project folder using a single command:
 
-### Option A: Run Both Together (Recommended)
 ```bash
 npm run dev
 ```
 
-### Option B: Run in Separate Terminals
-**Terminal 1 (Backend Server):**
-```bash
-npm run server
-# Server starts on http://localhost:5000
-```
+This will automatically launch:
+- **Backend API Server** on `http://localhost:5000`
+- **Frontend React Application** on `http://localhost:5173`
 
-**Terminal 2 (Frontend Client):**
-```bash
-npm run client
-# Client starts on http://localhost:5173
-```
+*(Alternatively, you can run them in separate terminals by running `npm run server` in one window and `npm run client` in another).*
 
-Open **`http://localhost:5173`** in your browser.
-
----
+Open your browser and navigate to **`http://localhost:5173`** to view the application!
 
 ## Key Features & Evaluation Highlights
 
@@ -193,3 +224,45 @@ Open **`http://localhost:5173`** in your browser.
    - Global search modal with shortcut (`Ctrl+K` / `Cmd+K`) and grouped results across all 4 entities.
    - Light / Dark theme toggle with persistent preference.
    - Toast notification alerts for all CRUD operations.
+
+---
+
+## Authentication & Role-Based Access Control (RBAC)
+
+The system includes a complete authentication flow using **bcrypt** (cost 12) for password hashing and **JWT** stored in secure, `httpOnly`, `SameSite=Lax` cookies.
+
+### User Roles
+- **Admin**: Full access. Can create, edit, and delete records, run custom SQL in the console, view the Audit Log, and manage users.
+- **Viewer**: Read-only access. Can view tables, profiles, and run saved queries in the Query Explorer, but cannot modify any data or access the free-form SQL console. Viewer profiles also have sensitive fields like police phone numbers and addresses permanently redacted.
+
+### Security Features
+- **Rate Limiting**: 5 failed login attempts per 15 minutes per IP + username returns a `429 Too Many Requests`.
+- **Timing Attack Resistance**: Uses a constant-time `bcrypt.compare` even when a username does not exist.
+- **CSRF Protection**: State-changing API requests require an `X-Requested-With` header.
+- **Helmet**: Secures Express apps by setting various HTTP headers.
+- **Audit Logging**: Every login, failed login, logout, create, update, delete, and custom SQL run is recorded securely in the database. Passwords are never logged.
+
+### Environment Variables
+Ensure the following variables are present in `server/.env`:
+```env
+JWT_SECRET=your_secure_random_jwt_secret_key
+CLIENT_URL=http://localhost:5173
+NODE_ENV=development
+```
+
+### Demo Credentials
+The `seed.sql` creates two initial accounts:
+
+| Role | Username | Password |
+| :--- | :--- | :--- |
+| **Admin** | `admin` | `admin123` |
+| **Viewer** | `viewer` | `viewer123` |
+
+> *Note: Please change these passwords upon first login via the user menu in the top right.*
+
+### Creating Users Script
+An admin can manage users via the `/users` dashboard. Alternatively, you can generate bcrypt hashes or seed users via the provided script:
+```bash
+cd server
+node scripts/create-user.js <username> <password> <role>
+```

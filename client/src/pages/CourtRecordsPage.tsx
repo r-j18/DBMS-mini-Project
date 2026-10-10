@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useMemo } from 'react';
+import { useAuth } from '../context/AuthContext';
 import { ColumnDef } from '@tanstack/react-table';
 import { Plus, Trash2, RefreshCw, Gavel, User } from 'lucide-react';
 import { api } from '../services/api';
@@ -10,6 +11,7 @@ import { StatusBadge } from '../components/common/StatusBadge';
 import { useToast } from '../components/common/Toast';
 
 export const CourtRecordsPage: React.FC = () => {
+  const { role } = useAuth();
   const [courtRecords, setCourtRecords] = useState<CourtRecord[]>([]);
   const [unassignedCriminals, setUnassignedCriminals] = useState<
     Array<{ criminal_id: number; name: string; crime: string }>
@@ -212,7 +214,8 @@ export const CourtRecordsPage: React.FC = () => {
         header: 'Actions',
         cell: ({ row }) => (
           <div className="flex items-center gap-1.5">
-            <button
+            {role === 'admin' && (
+<button
               onClick={() => handleOpenReassign(row.original)}
               className="px-2 py-0.5 text-xs font-typewriter border border-[#D9D0BE] dark:border-[#2E323B] rounded-xs text-[#1F1F1F] dark:text-[#E2DFD8] hover:bg-[#EFE9DC] dark:hover:bg-[#2E323B] flex items-center gap-1 transition-fast"
               title="Reassign Chamber"
@@ -220,13 +223,16 @@ export const CourtRecordsPage: React.FC = () => {
               <RefreshCw size={11} />
               <span>Reassign</span>
             </button>
-            <button
+)}
+            {role === 'admin' && (
+<button
               onClick={() => setDeleteTarget(row.original)}
               className="p-1 rounded text-[#B3261E] hover:text-[#921E18] hover:bg-red-50 dark:hover:bg-red-950/40 transition-fast"
               title="Clear Docket Assignment"
             >
               <Trash2 size={13} />
             </button>
+)}
           </div>
         ),
       },
@@ -247,13 +253,15 @@ export const CourtRecordsPage: React.FC = () => {
           </p>
         </div>
 
-        <button
+        {role === 'admin' && (
+<button
           onClick={handleOpenAssign}
           className="h-8 px-3 flex items-center gap-1.5 font-typewriter text-xs font-bold bg-[#1F2D3D] text-[#EFE9DC] hover:bg-[#141D27] rounded-xs transition-fast shrink-0 shadow-paper"
         >
           <Plus size={14} />
           <span>ASSIGN TO CHAMBER</span>
         </button>
+)}
       </div>
 
       {/* Main Table */}

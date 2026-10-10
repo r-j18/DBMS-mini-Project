@@ -9,7 +9,9 @@ export const pool = mysql.createPool({
   user: process.env.DB_USER || 'root',
   password: process.env.DB_PASSWORD || 'students',
   database: process.env.DB_NAME || 'crm_db',
+  ssl: process.env.DB_SSL === 'true' || (process.env.DB_HOST && process.env.DB_HOST.includes('tidbcloud')) ? { minVersion: 'TLSv1.2', rejectUnauthorized: true } : undefined,
   waitForConnections: true,
+
   connectionLimit: 10,
   queueLimit: 0,
 });
@@ -21,7 +23,9 @@ export const readonlyPool = mysql.createPool({
   user: process.env.DB_READONLY_USER || 'crm_readonly',
   password: process.env.DB_READONLY_PASSWORD || 'crm_readonly_pass',
   database: process.env.DB_NAME || 'crm_db',
+  ssl: process.env.DB_SSL === 'true' || (process.env.DB_HOST && process.env.DB_HOST.includes('tidbcloud')) ? { minVersion: 'TLSv1.2', rejectUnauthorized: true } : undefined,
   waitForConnections: true,
+
   connectionLimit: 5,
   queueLimit: 0,
 });

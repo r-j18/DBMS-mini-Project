@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useAuth } from '../context/AuthContext';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   ArrowLeft,
@@ -17,6 +18,7 @@ import { Skeleton } from '../components/common/Skeleton';
 import { useToast } from '../components/common/Toast';
 
 export const PoliceDetailPage: React.FC = () => {
+  const { role } = useAuth();
   const { id } = useParams<{ id: string }>();
   const [officer, setOfficer] = useState<OfficerDetail | null>(null);
   const [loading, setLoading] = useState(true);

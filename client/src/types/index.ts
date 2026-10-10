@@ -4,8 +4,8 @@ export interface Police {
   name: string;
   branch: string;
   age: number;
-  number: string;
-  address: string;
+  number: string | null;
+  address: string | null;
   case_count?: number;
 }
 
@@ -38,8 +38,8 @@ export interface CriminalProfile {
     rank: string;
     name: string;
     branch: string;
-    number: string;
-    address: string;
+    number: string | null;
+    address: string | null;
   } | null;
   courtRecord: {
     court_room_number: number;
@@ -162,7 +162,7 @@ export interface SearchResults {
     rank: string;
     name: string;
     branch: string;
-    number: string;
+    number: string | null;
   }>;
   courtRecords: Array<{
     court_room_number: number;
@@ -177,4 +177,34 @@ export interface SearchResults {
     sentence: string;
     criminal_name: string;
   }>;
+}
+
+export type UserRole = 'admin' | 'viewer';
+
+export interface User {
+  user_id: number;
+  username: string;
+  full_name: string;
+  role: UserRole;
+  is_active: boolean;
+  created_at: string;
+  last_login: string | null;
+}
+
+export interface AuthSessionUser {
+  userId: number;
+  username: string;
+  fullName: string;
+  role: UserRole;
+}
+
+export interface AuditLogEntry {
+  log_id: number;
+  user_id: number | null;
+  username: string;
+  action: 'LOGIN' | 'LOGOUT' | 'LOGIN_FAILED' | 'CREATE' | 'UPDATE' | 'DELETE' | 'SQL_RUN' | string;
+  table_name: string | null;
+  record_id: string | null;
+  detail: string | null;
+  created_at: string;
 }

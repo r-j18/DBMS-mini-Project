@@ -36,8 +36,8 @@ INSERT INTO JAIL (location, criminal_id, barrack_number, sentence) VALUES
 
 -- Populate USERS (bcrypt cost 12 hashes; demo credentials in README.md)
 INSERT INTO USERS (user_id, username, full_name, password_hash, role, is_active) VALUES
-(1, 'admin', 'Chief Inspector Admin', '$2b$12$c6RlEOxIw4zVrcIIXhDjm.63p5n09VNYcbM0TRCfFvZ.XEVv8HaUu', 'admin', TRUE),
-(2, 'viewer', 'Officer Field Viewer', '$2b$12$Pb6uB4kHyH4A6nAn5Y3/y.FNHFtyypLbXGOaJNMc6IvLQrQhdTDQS', 'viewer', TRUE)
+(1, 'admin', 'Chief Inspector Admin', '$2b$12$xE90ws/ZhPk9DZDQAfMIh.6YWs77bHiAVnYMwsZu2WjfpkcZVTwOK', 'admin', TRUE),
+(2, 'viewer', 'Officer Field Viewer', '$2b$12$j6R3kYgWpg8hysCayq.Vge4CycPx.sR3yA/wtd5Hnj5sulpBICUAO', 'viewer', TRUE)
 ON DUPLICATE KEY UPDATE
   full_name = VALUES(full_name),
   password_hash = VALUES(password_hash),
