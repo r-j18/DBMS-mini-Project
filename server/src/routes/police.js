@@ -124,14 +124,23 @@ router.get('/:id', async (req, res) => {
     // List of criminals investigated by this officer
     const [criminalRows] = await pool.query(
       `SELECT c.criminal_id, c.name, c.age, c.crime, c.investigation_status,
-              cr.court_room_number, j.location AS jail_location, j.barrack_number, j.sentence
+              cr.court_room_number, j.location AS jail_location, j.barrack_number, j.sentence,
+              IF(cp.photo_id IS NOT NULL, TRUE, FALSE) AS has_photo,
+              cp.uploaded_at AS photo_updated_at
        FROM CRIMINAL c
        LEFT JOIN COURT_RECORD cr ON c.criminal_id = cr.criminal_id
        LEFT JOIN JAIL j ON c.criminal_id = j.criminal_id
+       LEFT JOIN CRIMINAL_PHOTO cp ON c.criminal_id = cp.criminal_id
        WHERE c.investigating_officer = ?
        ORDER BY c.criminal_id ASC`,
       [policeId]
     );
+
+    const formattedCriminalRows = criminalRows.map((c) => ({
+      ...c,
+      has_photo: Boolean(c.has_photo),
+      photo_updated_at: c.photo_updated_at ? new Date(c.photo_updated_at).toISOString() : null,
+    }));
 
     // Workload statistics
     const workload = {
@@ -144,7 +153,7 @@ router.get('/:id', async (req, res) => {
     res.json({
       ...officer,
       workload,
-      criminals: criminalRows,
+      criminals: formattedCriminalRows,
     });
   } catch (err) {
     console.error('Error fetching officer details:', err);
