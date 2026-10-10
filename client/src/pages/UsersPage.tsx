@@ -372,12 +372,114 @@ export const UsersPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Users DataTable */}
+      {/* Users DataTable & Mobile Cards */}
       <DataTable
         columns={columns}
         data={users}
         isLoading={loading}
         emptyTitle="No personnel accounts currently registered."
+        mobileCardRenderer={(u) => {
+          const isSelf = u.user_id === currentUser?.userId;
+          const isLastAdmin = u.role === 'admin' && u.is_active && activeAdminCount <= 1;
+
+          return (
+            <div className="space-y-2.5">
+              <div className="flex items-start justify-between gap-2">
+                <div>
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <span className="font-typewriter text-sm font-bold text-[#1F1F1F] dark:text-[#E2DFD8]">
+                      {u.username}
+                    </span>
+                    {isSelf && (
+                      <span className="font-mono text-[9px] px-1 py-0.2 bg-[#B08D3C]/20 text-[#B08D3C] border border-[#B08D3C]/40 rounded-xs font-bold">
+                        YOU
+                      </span>
+                    )}
+                  </div>
+                  <div className="font-typewriter text-xs text-[#7A7A7A] mt-0.5">
+                    {u.full_name}
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-1.5 shrink-0">
+                  {u.role === 'admin' ? (
+                    <span className="px-1.5 py-0.5 border border-[#B3261E] text-[#B3261E] bg-[#B3261E]/10 font-typewriter text-[10px] font-bold uppercase rounded-xs">
+                      ADMIN
+                    </span>
+                  ) : (
+                    <span className="px-1.5 py-0.5 border border-[#1F2D3D] dark:border-[#8C9AA8] text-[#1F2D3D] dark:text-[#8C9AA8] bg-[#1F2D3D]/10 font-typewriter text-[10px] font-bold uppercase rounded-xs">
+                      VIEWER
+                    </span>
+                  )}
+
+                  {u.is_active ? (
+                    <span className="inline-flex items-center gap-1 font-mono text-[10px] font-bold text-[#386641] bg-[#386641]/15 px-1.5 py-0.5 border border-[#386641]/40 rounded-xs">
+                      <CheckCircle size={10} />
+                      ACTIVE
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center gap-1 font-mono text-[10px] font-bold text-[#B3261E] bg-[#B3261E]/15 px-1.5 py-0.5 border border-[#B3261E]/40 rounded-xs">
+                      <XCircle size={10} />
+                      OFF
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              <div className="text-[11px] font-mono text-[#7A7A7A] pt-1 border-t border-[#D9D0BE]/60 dark:border-[#2E323B]/60">
+                Last login: {u.last_login ? new Date(u.last_login).toLocaleString() : 'Never logged in'}
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex items-center justify-end gap-2 pt-2 border-t border-[#D9D0BE]/60 dark:border-[#2E323B]/60">
+                <button
+                  type="button"
+                  onClick={() => handleOpenEdit(u)}
+                  className="min-h-[44px] px-3 flex items-center justify-center gap-1.5 text-xs font-typewriter font-semibold border border-[#D9D0BE] dark:border-[#2E323B] bg-[#EFE9DC] dark:bg-[#1F2228] text-[#1F1F1F] dark:text-[#E2DFD8] rounded-xs"
+                >
+                  <Edit2 size={13} />
+                  <span>EDIT</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setPasswordTarget(u);
+                    setNewPassword('');
+                    setPasswordError('');
+                  }}
+                  className="min-h-[44px] px-3 flex items-center justify-center gap-1.5 text-xs font-typewriter font-semibold border border-[#B08D3C]/40 bg-[#B08D3C]/10 text-[#B08D3C] rounded-xs"
+                >
+                  <Key size={13} />
+                  <span>PASSWORD</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setStatusTarget(u)}
+                  disabled={isSelf || isLastAdmin}
+                  className={`min-h-[44px] px-3 flex items-center justify-center gap-1.5 text-xs font-typewriter font-semibold rounded-xs border ${
+                    u.is_active
+                      ? 'border-red-300 dark:border-red-900/60 text-[#B3261E] hover:bg-red-50 dark:hover:bg-red-950/40'
+                      : 'border-emerald-300 dark:border-emerald-900/60 text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/40'
+                  } disabled:opacity-40 disabled:cursor-not-allowed`}
+                >
+                  {u.is_active ? (
+                    <>
+                      <XCircle size={13} />
+                      <span>DEACTIVATE</span>
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircle size={13} />
+                      <span>ACTIVATE</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+          );
+        }}
       />
 
       {/* Add / Edit Drawer */}

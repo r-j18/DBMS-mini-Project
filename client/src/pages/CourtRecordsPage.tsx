@@ -264,7 +264,7 @@ export const CourtRecordsPage: React.FC = () => {
 )}
       </div>
 
-      {/* Main Table */}
+      {/* Main Table & Mobile Cards */}
       <DataTable
         data={courtRecords}
         columns={columns}
@@ -273,6 +273,67 @@ export const CourtRecordsPage: React.FC = () => {
         pageSize={15}
         emptyTitle="No court records on file"
         emptyDescription="No court room assignments currently active in the judicial docket."
+        mobileCardRenderer={(record) => (
+          <div className="space-y-2.5">
+            <div className="flex items-start justify-between gap-2">
+              <div>
+                <div className="flex items-center gap-1.5 font-typewriter font-bold text-[#854D0E] dark:text-amber-400 text-sm">
+                  <Gavel size={15} className="text-[#B08D3C]" />
+                  <span>CHAMBER ROOM #{record.court_room_number}</span>
+                </div>
+                <div className="flex items-center gap-1.5 mt-1">
+                  <span className="font-mono text-[#B3261E] font-bold text-xs">
+                    #{record.criminal_id}
+                  </span>
+                  <span className="font-typewriter font-bold text-sm text-[#1F1F1F] dark:text-[#E2DFD8]">
+                    {record.criminal_name}
+                  </span>
+                </div>
+              </div>
+
+              {record.investigation_status && (
+                <StatusBadge status={record.investigation_status} size="sm" />
+              )}
+            </div>
+
+            <div className="grid grid-cols-2 gap-2 text-xs pt-1 border-t border-[#D9D0BE]/60 dark:border-[#2E323B]/60 font-typewriter">
+              <div>
+                <span className="text-[10px] uppercase font-bold text-[#7A7A7A] block">Charge</span>
+                <span className="text-[#1F1F1F] dark:text-[#E2DFD8] truncate block">
+                  {record.crime || 'Unspecified'}
+                </span>
+              </div>
+              <div>
+                <span className="text-[10px] uppercase font-bold text-[#7A7A7A] block">Officer In Charge</span>
+                <span className="text-[#1F1F1F] dark:text-[#E2DFD8] truncate block">
+                  {record.officer_name ? `${record.officer_rank || ''} ${record.officer_name}` : 'None'}
+                </span>
+              </div>
+            </div>
+
+            {/* Mobile Actions */}
+            {role === 'admin' && (
+              <div className="flex items-center justify-end gap-2 pt-2 border-t border-[#D9D0BE]/60 dark:border-[#2E323B]/60">
+                <button
+                  type="button"
+                  onClick={() => handleOpenReassign(record)}
+                  className="min-h-[44px] px-3 flex items-center justify-center gap-1.5 text-xs font-typewriter font-semibold border border-[#D9D0BE] dark:border-[#2E323B] bg-[#EFE9DC] dark:bg-[#1F2228] text-[#1F1F1F] dark:text-[#E2DFD8] rounded-xs"
+                >
+                  <RefreshCw size={13} />
+                  <span>REASSIGN</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setDeleteTarget(record)}
+                  className="min-h-[44px] px-3 flex items-center justify-center gap-1.5 text-xs font-typewriter font-semibold border border-red-300 dark:border-red-900/60 bg-red-50 dark:bg-red-950/30 text-[#B3261E] rounded-xs"
+                >
+                  <Trash2 size={13} />
+                  <span>CLEAR</span>
+                </button>
+              </div>
+            )}
+          </div>
+        )}
       />
 
       {/* Assign Modal */}
