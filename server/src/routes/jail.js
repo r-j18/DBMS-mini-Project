@@ -83,14 +83,30 @@ router.get('/', async (req, res) => {
 // GET /api/jail/facilities - Distinct facilities with counts and inmate breakdowns
 router.get('/facilities', async (req, res) => {
   try {
-    const [rows] = await pool.query(`
+    const [facilities] = await pool.query(`
       SELECT j.location, COUNT(j.criminal_id) AS inmate_count,
              COUNT(DISTINCT j.barrack_number) AS barrack_count
       FROM JAIL j
       GROUP BY j.location
       ORDER BY inmate_count DESC
     `);
-    res.json(rows);
+
+    const [inmates] = await pool.query(`
+      SELECT j.location, j.criminal_id, j.barrack_number, j.sentence,
+             c.name AS criminal_name, c.crime
+      FROM JAIL j
+      JOIN CRIMINAL c ON j.criminal_id = c.criminal_id
+      ORDER BY j.location ASC, j.barrack_number ASC
+    `);
+
+    const result = facilities.map((f) => ({
+      location: f.location,
+      inmate_count: Number(f.inmate_count),
+      barrack_count: Number(f.barrack_count),
+      inmates: inmates.filter((i) => i.location === f.location),
+    }));
+
+    res.json(result);
   } catch (err) {
     console.error('Error fetching facilities summary:', err);
     res.status(500).json({ error: 'Failed to fetch facilities' });

@@ -55,10 +55,38 @@ export const JailPage: React.FC = () => {
       setLoading(true);
       const [tableRes, groupRes] = await Promise.all([
         api.getJailRecords({ limit: 100 }),
-        api.getJailLocations(),
+        api.getJailLocations().catch(() => []),
       ]);
-      setJailRecords(tableRes.data);
-      setLocations(groupRes);
+      const records = tableRes.data || [];
+      setJailRecords(records);
+
+      const locList = Array.isArray(groupRes) && groupRes.length > 0 ? groupRes : [];
+      if (locList.length === 0 && records.length > 0) {
+        // Derive locations from records as fallback
+        const locMap = new Map<string, JailLocationGroup>();
+        for (const r of records) {
+          if (!locMap.has(r.location)) {
+            locMap.set(r.location, {
+              location: r.location,
+              inmate_count: 0,
+              inmates: [],
+            });
+          }
+          const group = locMap.get(r.location)!;
+          group.inmate_count += 1;
+          group.inmates.push({
+            location: r.location,
+            criminal_id: r.criminal_id,
+            barrack_number: r.barrack_number,
+            sentence: r.sentence,
+            criminal_name: r.criminal_name || '',
+            crime: r.crime || '',
+          });
+        }
+        setLocations(Array.from(locMap.values()));
+      } else {
+        setLocations(locList);
+      }
     } catch (err: any) {
       showToast('error', err.message || 'Failed to load detention records');
     } finally {
@@ -390,53 +418,87 @@ export const JailPage: React.FC = () => {
       {/* Grouped View Mode: Group by Location */}
       {viewMode === 'grouped' && (
         <div className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {locations.map((loc) => (
-              <div
-                key={loc.location}
-                className="p-4 bg-[#F6F0E0] dark:bg-[#1F2228] border border-[#D9D0BE] dark:border-[#2E323B] rounded shadow-folder flex flex-col justify-between"
-              >
-                <div>
-                  <div className="flex items-center justify-between pb-2 mb-2 border-b border-[#D9D0BE] dark:border-[#2E323B]">
-                    <div className="flex items-center gap-1.5 font-typewriter font-bold text-[#1F1F1F] dark:text-[#E2DFD8] text-xs">
-                      <Building size={14} className="text-[#B08D3C]" />
-                      <span>{loc.location}</span>
-                    </div>
-                    <span className="font-mono text-xs px-2 py-0.5 rounded-xs bg-[#E6DFCD] dark:bg-[#2C303A] font-bold text-[#B3261E] dark:text-red-400 tabular-nums">
-                      {loc.inmate_count} {loc.inmate_count === 1 ? 'Inmate' : 'Inmates'}
-                    </span>
-                  </div>
+          {locations.length === 0 ? (
+            <div className="p-8 text-center bg-[#F6F0E0] dark:bg-[#1F2228] border border-[#D9D0BE] dark:border-[#2E323B] rounded">
+              <Building size={24} className="mx-auto text-[#7A7A7A] mb-2" />
+              <p className="font-typewriter text-sm font-bold text-[#1F1F1F] dark:text-[#E2DFD8]">
+                No facilities with active inmates
+              </p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {locations.map((loc) => {
+                const inmateList =
+                  loc.inmates && Array.isArray(loc.inmates) && loc.inmates.length > 0
+                    ? loc.inmates
+                    : jailRecords
+                        .filter((r) => r.location === loc.location)
+                        .map((r) => ({
+                          location: r.location,
+                          criminal_id: r.criminal_id,
+                          barrack_number: r.barrack_number,
+                          sentence: r.sentence,
+                          criminal_name: r.criminal_name || '',
+                          crime: r.crime || '',
+                        }));
 
-                  <div className="space-y-2 mt-3 font-typewriter">
-                    {loc.inmates.map((inmate) => (
-                      <div
-                        key={inmate.criminal_id}
-                        className="p-2.5 rounded-xs bg-[#EFE9DC] dark:bg-[#16181C] border border-[#D9D0BE] dark:border-[#2E323B] text-xs flex items-center justify-between shadow-xs"
-                      >
-                        <div>
-                          <div className="flex items-center gap-1.5 font-semibold text-[#1F1F1F] dark:text-[#E2DFD8]">
-                            <span className="font-mono text-[#B3261E]">#{inmate.criminal_id}</span>
-                            <span>{inmate.criminal_name}</span>
-                          </div>
-                          <span className="text-[11px] text-[#7A7A7A] block mt-0.5">
-                            {inmate.crime}
-                          </span>
+                return (
+                  <div
+                    key={loc.location}
+                    className="p-4 bg-[#F6F0E0] dark:bg-[#1F2228] border border-[#D9D0BE] dark:border-[#2E323B] rounded shadow-folder flex flex-col justify-between"
+                  >
+                    <div>
+                      <div className="flex items-center justify-between pb-2 mb-2 border-b border-[#D9D0BE] dark:border-[#2E323B]">
+                        <div className="flex items-center gap-1.5 font-typewriter font-bold text-[#1F1F1F] dark:text-[#E2DFD8] text-xs">
+                          <Building size={14} className="text-[#B08D3C]" />
+                          <span>{loc.location}</span>
                         </div>
-                        <div className="text-right">
-                          <span className="font-mono text-[11px] font-bold block text-[#1F1F1F] dark:text-[#E2DFD8]">
-                            Barrack {inmate.barrack_number}
-                          </span>
-                          <span className="font-mono text-[10px] text-[#B3261E] dark:text-red-400 block font-bold">
-                            {inmate.sentence}
-                          </span>
-                        </div>
+                        <span className="font-mono text-xs px-2 py-0.5 rounded-xs bg-[#E6DFCD] dark:bg-[#2C303A] font-bold text-[#B3261E] dark:text-red-400 tabular-nums">
+                          {loc.inmate_count ?? inmateList.length}{' '}
+                          {(loc.inmate_count ?? inmateList.length) === 1 ? 'Inmate' : 'Inmates'}
+                        </span>
                       </div>
-                    ))}
+
+                      <div className="space-y-2 mt-3 font-typewriter">
+                        {inmateList.length === 0 ? (
+                          <p className="text-xs text-[#7A7A7A] italic py-2">
+                            No inmates currently housed in this facility.
+                          </p>
+                        ) : (
+                          inmateList.map((inmate) => (
+                            <div
+                              key={inmate.criminal_id}
+                              className="p-2.5 rounded-xs bg-[#EFE9DC] dark:bg-[#16181C] border border-[#D9D0BE] dark:border-[#2E323B] text-xs flex items-center justify-between shadow-xs"
+                            >
+                              <div>
+                                <div className="flex items-center gap-1.5 font-semibold text-[#1F1F1F] dark:text-[#E2DFD8]">
+                                  <span className="font-mono text-[#B3261E]">
+                                    #{inmate.criminal_id}
+                                  </span>
+                                  <span>{inmate.criminal_name}</span>
+                                </div>
+                                <span className="text-[11px] text-[#7A7A7A] block mt-0.5">
+                                  {inmate.crime}
+                                </span>
+                              </div>
+                              <div className="text-right">
+                                <span className="font-mono text-[11px] font-bold block text-[#1F1F1F] dark:text-[#E2DFD8]">
+                                  Barrack {inmate.barrack_number}
+                                </span>
+                                <span className="font-mono text-[10px] text-[#B3261E] dark:text-red-400 block font-bold">
+                                  {inmate.sentence}
+                                </span>
+                              </div>
+                            </div>
+                          ))
+                        )}
+                      </div>
+                    </div>
                   </div>
-                </div>
-              </div>
-            ))}
-          </div>
+                );
+              })}
+            </div>
+          )}
         </div>
       )}
 
