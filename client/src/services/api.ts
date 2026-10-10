@@ -151,6 +151,32 @@ export const api = {
       handleResponse<{ message: string }>(r)
     ),
 
+  // Criminal Photos (BLOB)
+  uploadCriminalPhoto: (id: number, file: File | Blob): Promise<{ message: string; size_bytes: number }> => {
+    const formData = new FormData();
+    formData.append('photo', file);
+    return customFetch(`${API_BASE}/criminals/${id}/photo`, {
+      method: 'POST',
+      body: formData,
+    }).then((r) => handleResponse<{ message: string; size_bytes: number }>(r));
+  },
+
+  deleteCriminalPhoto: (id: number): Promise<{ message: string }> =>
+    customFetch(`${API_BASE}/criminals/${id}/photo`, { method: 'DELETE' }).then((r) =>
+      handleResponse<{ message: string }>(r)
+    ),
+
+  getCriminalPhotoUrl: (id: number, updatedAt?: string | null): string => {
+    const v = updatedAt ? `?v=${new Date(updatedAt).getTime()}` : '';
+    return `${API_BASE}/criminals/${id}/photo${v}`;
+  },
+
+  getCriminalThumbUrl: (id: number, updatedAt?: string | null): string => {
+    const v = updatedAt ? `?v=${new Date(updatedAt).getTime()}` : '';
+    return `${API_BASE}/criminals/${id}/photo/thumb${v}`;
+  },
+
+
   // Police
   getPoliceList: (params: Record<string, string | number> = {}): Promise<{ data: Police[]; pagination: any }> => {
     const query = new URLSearchParams();

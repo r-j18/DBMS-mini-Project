@@ -16,6 +16,7 @@ import {
   Info,
 } from 'lucide-react';
 import { Criminal, Police } from '../../types';
+import { api } from '../../services/api';
 import { PushPin } from '../common/PushPin';
 import { Stamp } from '../common/Stamp';
 import { EvidenceTag } from '../common/EvidenceTag';
@@ -495,11 +496,11 @@ export const CaseBoard: React.FC<CaseBoardProps> = ({
                     <PushPin color="red" size={24} />
                   </div>
 
-                  {/* Polaroid Frame with Silhouette & Height Chart */}
+                  {/* Polaroid Frame with Silhouette / Real Thumbnail & Height Chart */}
                   <div className="pt-2">
                     <div className="relative w-full h-28 bg-[#E6DFCD] dark:bg-[#15171B] border border-[#C5BBA6] dark:border-[#2C303A] rounded-xs overflow-hidden flex items-end justify-center">
                       {/* Height ruler lines */}
-                      <div className="absolute left-0 top-0 bottom-0 w-8 border-r border-[#C5BBA6] dark:border-[#2C303A] flex flex-col justify-between py-1 text-[8px] font-mono text-[#8C7E68] select-none pl-1">
+                      <div className="absolute left-0 top-0 bottom-0 w-8 border-r border-[#C5BBA6] dark:border-[#2C303A] flex flex-col justify-between py-1 text-[8px] font-mono text-[#8C7E68] select-none pl-1 z-0">
                         <span>6'0"</span>
                         <span>5'9"</span>
                         <span>5'6"</span>
@@ -507,16 +508,38 @@ export const CaseBoard: React.FC<CaseBoardProps> = ({
                         <span>5'0"</span>
                       </div>
 
-                      {/* Silhouette Graphic */}
-                      <svg width="70" height="85" viewBox="0 0 60 70" fill="#3A3833">
-                        <circle cx="30" cy="22" r="14" />
-                        <path d="M10 65 C10 42 20 38 30 38 C40 38 50 42 50 65 Z" />
-                      </svg>
+                      {crm.has_photo ? (
+                        <img
+                          src={api.getCriminalThumbUrl(crm.criminal_id, crm.photo_updated_at)}
+                          alt={`Photo of ${crm.name}`}
+                          width={160}
+                          height={112}
+                          loading="lazy"
+                          className="w-full h-full object-cover z-10 relative"
+                          onError={(e) => {
+                            (e.target as HTMLElement).style.display = 'none';
+                            const fallback = (e.target as HTMLElement).nextElementSibling as HTMLElement;
+                            if (fallback) fallback.style.display = 'flex';
+                          }}
+                        />
+                      ) : null}
 
-                      {/* Offender Initials */}
-                      <span className="absolute bottom-1 right-2 font-typewriter font-bold text-xs text-[#8C7E68]">
-                        {initials}
-                      </span>
+                      {/* Silhouette Graphic fallback */}
+                      <div
+                        className={`w-full h-full items-end justify-center relative z-10 ${
+                          crm.has_photo ? 'hidden' : 'flex'
+                        }`}
+                      >
+                        <svg width="70" height="85" viewBox="0 0 60 70" fill="#3A3833">
+                          <circle cx="30" cy="22" r="14" />
+                          <path d="M10 65 C10 42 20 38 30 38 C40 38 50 42 50 65 Z" />
+                        </svg>
+
+                        {/* Offender Initials */}
+                        <span className="absolute bottom-1 right-2 font-typewriter font-bold text-xs text-[#8C7E68]">
+                          {initials}
+                        </span>
+                      </div>
                     </div>
 
                     {/* Offender Metadata */}

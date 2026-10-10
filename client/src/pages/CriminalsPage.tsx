@@ -10,6 +10,7 @@ import { Drawer } from '../components/common/Drawer';
 import { ConfirmDialog } from '../components/common/ConfirmDialog';
 import { StatusBadge } from '../components/common/StatusBadge';
 import { useToast } from '../components/common/Toast';
+import { PhotoUploadField } from '../components/criminals/PhotoUploadField';
 
 export const CriminalsPage: React.FC = () => {
   const { role } = useAuth();
@@ -38,6 +39,13 @@ export const CriminalsPage: React.FC = () => {
   });
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Photo upload states in drawer
+  const [selectedPhotoBlob, setSelectedPhotoBlob] = useState<Blob | null>(null);
+  const [photoPreviewUrl, setPhotoPreviewUrl] = useState<string | null>(null);
+  const [photoRemoved, setPhotoRemoved] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState<number | null>(null);
+  const [partialFailure, setPartialFailure] = useState<{ criminalId: number; error: string } | null>(null);
 
   // Delete dialog state
   const [deleteTarget, setDeleteTarget] = useState<Criminal | null>(null);
@@ -91,6 +99,11 @@ export const CriminalsPage: React.FC = () => {
       investigation_status: 'Open',
     });
     setFormErrors({});
+    setSelectedPhotoBlob(null);
+    setPhotoPreviewUrl(null);
+    setPhotoRemoved(false);
+    setUploadProgress(null);
+    setPartialFailure(null);
     setIsDrawerOpen(true);
   };
 
@@ -106,6 +119,11 @@ export const CriminalsPage: React.FC = () => {
       investigation_status: criminal.investigation_status,
     });
     setFormErrors({});
+    setSelectedPhotoBlob(null);
+    setPhotoPreviewUrl(null);
+    setPhotoRemoved(false);
+    setUploadProgress(null);
+    setPartialFailure(null);
     setIsDrawerOpen(true);
   };
 
@@ -146,6 +164,7 @@ export const CriminalsPage: React.FC = () => {
     try {
       setIsSubmitting(true);
       if (editingCriminal) {
+        // Step 1: Update criminal details
         await api.updateCriminal(editingCriminal.criminal_id, {
           name: formData.name.trim(),
           age: parseInt(formData.age, 10),
@@ -153,22 +172,78 @@ export const CriminalsPage: React.FC = () => {
           investigating_officer: parseInt(formData.investigating_officer, 10),
           investigation_status: formData.investigation_status,
         });
+
+        // Step 2: Handle photo update or removal
+        if (selectedPhotoBlob) {
+          setUploadProgress(50);
+          await api.uploadCriminalPhoto(editingCriminal.criminal_id, selectedPhotoBlob);
+          setUploadProgress(100);
+        } else if (photoRemoved && editingCriminal.has_photo) {
+          await api.deleteCriminalPhoto(editingCriminal.criminal_id);
+        }
+
         showToast('success', 'Criminal record updated successfully');
+        setIsDrawerOpen(false);
+        loadData();
       } else {
+        // Step 1: Create record first
+        const newCid = parseInt(formData.criminal_id, 10);
         await api.createCriminal({
-          criminal_id: parseInt(formData.criminal_id, 10),
+          criminal_id: newCid,
           name: formData.name.trim(),
           age: parseInt(formData.age, 10),
           crime: formData.crime.trim(),
           investigating_officer: parseInt(formData.investigating_officer, 10),
           investigation_status: formData.investigation_status,
         });
-        showToast('success', 'New criminal registered successfully');
+
+        // Step 2: If a photo is attached, upload it
+        if (selectedPhotoBlob) {
+          try {
+            setUploadProgress(50);
+            await api.uploadCriminalPhoto(newCid, selectedPhotoBlob);
+            setUploadProgress(100);
+            showToast('success', 'Criminal registered and photo uploaded successfully');
+            setIsDrawerOpen(false);
+            loadData();
+          } catch (photoErr: any) {
+            // Partial failure: record saved, photo failed
+            setUploadProgress(null);
+            loadData(); // Refresh list to show the created record
+            setPartialFailure({
+              criminalId: newCid,
+              error: photoErr.message || 'Failed to upload photo',
+            });
+            showToast('error', 'Criminal record saved, but photo upload failed. You can retry below.');
+            return;
+          }
+        } else {
+          showToast('success', 'New criminal registered successfully');
+          setIsDrawerOpen(false);
+          loadData();
+        }
       }
+    } catch (err: any) {
+      showToast('error', err.message || 'Operation failed');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleRetryPhoto = async () => {
+    if (!partialFailure || !selectedPhotoBlob) return;
+    try {
+      setIsSubmitting(true);
+      setUploadProgress(50);
+      await api.uploadCriminalPhoto(partialFailure.criminalId, selectedPhotoBlob);
+      setUploadProgress(100);
+      showToast('success', 'Criminal photo uploaded successfully on retry');
+      setPartialFailure(null);
       setIsDrawerOpen(false);
       loadData();
     } catch (err: any) {
-      showToast('error', err.message || 'Operation failed');
+      showToast('error', err.message || 'Retry photo upload failed');
+      setUploadProgress(null);
     } finally {
       setIsSubmitting(false);
     }
@@ -216,6 +291,48 @@ export const CriminalsPage: React.FC = () => {
 
   const columns = useMemo<ColumnDef<Criminal>[]>(
     () => [
+      {
+        id: 'photo',
+        header: '',
+        size: 44,
+        enableSorting: false,
+        cell: (info) => {
+          const row = info.row.original;
+          const initials = row.name
+            .split(' ')
+            .map((n) => n[0])
+            .join('')
+            .toUpperCase()
+            .slice(0, 2);
+
+          return (
+            <div className="w-8 h-8 rounded-xs overflow-hidden shrink-0 flex items-center justify-center relative">
+              {row.has_photo ? (
+                <img
+                  src={api.getCriminalThumbUrl(row.criminal_id, row.photo_updated_at)}
+                  alt={`Photo of ${row.name}`}
+                  width={32}
+                  height={32}
+                  loading="lazy"
+                  className="w-8 h-8 rounded-xs object-cover border border-[#D9D0BE] dark:border-[#3A3F4D]"
+                  onError={(e) => {
+                    (e.target as HTMLElement).style.display = 'none';
+                    const fallback = (e.target as HTMLElement).nextElementSibling as HTMLElement;
+                    if (fallback) fallback.style.display = 'flex';
+                  }}
+                />
+              ) : null}
+              <div
+                className={`w-8 h-8 rounded-xs bg-[#E6DFCD] dark:bg-[#15171B] border border-[#D9D0BE] dark:border-[#3A3F4D] items-center justify-center font-typewriter font-bold text-[10px] text-[#7A6C58] dark:text-[#A09D95] select-none ${
+                  row.has_photo ? 'hidden' : 'flex'
+                }`}
+              >
+                {initials}
+              </div>
+            </div>
+          );
+        },
+      },
       {
         accessorKey: 'criminal_id',
         header: 'Case ID',
@@ -613,6 +730,49 @@ export const CriminalsPage: React.FC = () => {
               <option value="Closed">Closed</option>
             </select>
           </div>
+
+          {/* Identification Photo Upload Field */}
+          <PhotoUploadField
+            currentPhotoUrl={
+              !photoRemoved && editingCriminal?.has_photo
+                ? api.getCriminalPhotoUrl(editingCriminal.criminal_id, editingCriminal.photo_updated_at)
+                : null
+            }
+            selectedBlob={selectedPhotoBlob}
+            previewUrl={photoPreviewUrl}
+            onPhotoSelected={(blob, preview) => {
+              setSelectedPhotoBlob(blob);
+              setPhotoPreviewUrl(preview);
+              setPhotoRemoved(false);
+            }}
+            onPhotoRemoved={() => {
+              setSelectedPhotoBlob(null);
+              setPhotoPreviewUrl(null);
+              setPhotoRemoved(true);
+            }}
+            uploadProgress={uploadProgress}
+            disabled={isSubmitting}
+          />
+
+          {/* Partial failure retry banner */}
+          {partialFailure && (
+            <div className="p-3 bg-amber-50 dark:bg-amber-950/40 border border-amber-300 dark:border-amber-800 rounded text-xs space-y-2">
+              <div className="font-typewriter font-bold text-amber-800 dark:text-amber-200">
+                PARTIAL SAVE NOTICE:
+              </div>
+              <p className="text-amber-900 dark:text-amber-300">
+                Criminal dossier #{partialFailure.criminalId} was saved, but mugshot upload encountered an error: {partialFailure.error}
+              </p>
+              <button
+                type="button"
+                onClick={handleRetryPhoto}
+                disabled={isSubmitting}
+                className="px-3 py-1.5 bg-amber-700 hover:bg-amber-800 text-white font-typewriter text-xs font-bold rounded-xs shadow-xs"
+              >
+                Retry Photo Upload
+              </button>
+            </div>
+          )}
 
           <div className="flex items-center justify-end gap-2 pt-4 border-t border-[#D9D0BE] dark:border-[#2E323B]">
             <button

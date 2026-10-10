@@ -52,6 +52,22 @@ CREATE TABLE JAIL (
     sentence VARCHAR(50) NOT NULL,
     CONSTRAINT fk_jail_criminal FOREIGN KEY (criminal_id) 
         REFERENCES CRIMINAL(criminal_id) ON UPDATE CASCADE ON DELETE RESTRICT
+) ENGINE=InnoDB;
+
+-- 5. CRIMINAL_PHOTO Table (Criminal Dossier Photo & Thumbnail Storage)
+CREATE TABLE CRIMINAL_PHOTO (
+    photo_id INT PRIMARY KEY AUTO_INCREMENT,
+    criminal_id INT UNIQUE NOT NULL,
+    photo_data MEDIUMBLOB NOT NULL,
+    thumb_data BLOB NOT NULL,
+    mime_type VARCHAR(50) NOT NULL DEFAULT 'image/webp',
+    size_bytes INT NOT NULL,
+    uploaded_by INT NULL,
+    uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT fk_photo_criminal FOREIGN KEY (criminal_id) 
+        REFERENCES CRIMINAL(criminal_id) ON DELETE CASCADE,
+    CONSTRAINT fk_photo_uploader FOREIGN KEY (uploaded_by) 
+        REFERENCES USERS(user_id) ON DELETE SET NULL
 ) ENGINE=InnoDB;`;
 
   const handleCopySchema = () => {
@@ -108,6 +124,21 @@ CREATE TABLE JAIL (
         { name: 'sentence', type: 'VARCHAR(50)', isPK: false, isFK: false, desc: 'Judicially mandated incarceration term' },
       ],
     },
+    {
+      name: 'CRIMINAL_PHOTO',
+      docketNumber: 'SCH-05',
+      description: 'Binary mediumblob photo and thumbnail storage for offender identification dossiers',
+      columns: [
+        { name: 'photo_id', type: 'INT', isPK: true, isFK: false, desc: 'Primary key auto-increment photo ID' },
+        { name: 'criminal_id', type: 'INT', isPK: false, isFK: true, ref: 'CRIMINAL.criminal_id', desc: 'UNIQUE FK (1:1 with CRIMINAL, ON DELETE CASCADE)' },
+        { name: 'photo_data', type: 'MEDIUMBLOB', isPK: false, isFK: false, desc: 'WebP compressed mugshot image (<= 150 KB, max 600x600)' },
+        { name: 'thumb_data', type: 'BLOB', isPK: false, isFK: false, desc: '160x160 cover-cropped WebP thumbnail (<= 15 KB)' },
+        { name: 'mime_type', type: 'VARCHAR(50)', isPK: false, isFK: false, desc: 'MIME type default image/webp' },
+        { name: 'size_bytes', type: 'INT', isPK: false, isFK: false, desc: 'Compressed photo size in bytes' },
+        { name: 'uploaded_by', type: 'INT', isPK: false, isFK: true, ref: 'USERS.user_id', desc: 'FK to USERS on delete set null' },
+        { name: 'uploaded_at', type: 'TIMESTAMP', isPK: false, isFK: false, desc: 'Timestamp of upload or last replacement' },
+      ],
+    },
   ];
 
   return (
@@ -159,7 +190,7 @@ CREATE TABLE JAIL (
 
         <div className="w-full overflow-x-auto py-2">
           <svg
-            viewBox="0 0 920 320"
+            viewBox="0 0 920 490"
             className="w-full min-w-[760px] text-[#1F1F1F] dark:text-[#E2DFD8] select-none"
           >
             <defs>
@@ -359,6 +390,61 @@ CREATE TABLE JAIL (
               </text>
               <text x="12" y="124" fontSize="11" fontFamily="monospace" fill="currentColor">
                 sentence (VARCHAR 50)
+              </text>
+            </g>
+
+            {/* Connection: CRIMINAL -> CRIMINAL_PHOTO (1:1 CASCADE) */}
+            <path
+              d="M 460 230 L 460 270"
+              fill="none"
+              stroke="#B3261E"
+              strokeWidth="2"
+              markerEnd="url(#erd-red-arrow)"
+            />
+            <text x="470" y="254" fontSize="10" fontFamily="monospace" fill="#B3261E" fontWeight="bold">
+              1 : 1 (CASCADE)
+            </text>
+
+            {/* Entity 5: CRIMINAL_PHOTO */}
+            <g transform="translate(350, 270)">
+              <rect
+                width="220"
+                height="200"
+                rx="2"
+                fill="#F6F0E0"
+                stroke="#D8D2C2"
+                strokeWidth="1.5"
+                className="dark:fill-[#252830] dark:stroke-[#383C45]"
+              />
+              <rect width="220" height="28" rx="2" fill="#1F2D3D" />
+              <line x1="0" y1="28" x2="220" y2="28" stroke="#B08D3C" strokeWidth="1.5" />
+              <text x="110" y="19" textAnchor="middle" fill="#FAF7F0" fontSize="12" fontFamily="monospace" fontWeight="bold">
+                CRIMINAL_PHOTO
+              </text>
+
+              <text x="12" y="50" fontSize="11" fontFamily="monospace" fontWeight="bold" fill="#B08D3C">
+                [PK] photo_id (INT)
+              </text>
+              <text x="12" y="70" fontSize="11" fontFamily="monospace" fontWeight="bold" fill="#B3261E">
+                [FK] criminal_id (UNIQUE)
+              </text>
+              <text x="12" y="90" fontSize="11" fontFamily="monospace" fill="currentColor">
+                photo_data (MEDIUMBLOB)
+              </text>
+              <text x="12" y="110" fontSize="11" fontFamily="monospace" fill="currentColor">
+                thumb_data (BLOB)
+              </text>
+              <text x="12" y="130" fontSize="11" fontFamily="monospace" fill="currentColor">
+                mime_type (VARCHAR 50)
+              </text>
+              <text x="12" y="150" fontSize="11" fontFamily="monospace" fill="currentColor">
+                size_bytes (INT)
+              </text>
+              <text x="12" y="170" fontSize="10" fontFamily="monospace" fill="#7A7A7A">
+                [FK] uploaded_by → USERS
+              </text>
+              <text x="12" y="188" fontSize="10" fontFamily="monospace" fill="currentColor">
+                uploaded_at (TIMESTAMP)
               </text>
             </g>
           </svg>
