@@ -65,7 +65,7 @@ export async function requireAuth(req, res, next) {
       return res.status(401).json({ error: 'Session expired or invalid. Please sign in again.' });
     }
 
-    // Always query DB to ensure user is active (prompt requirement: deactivated users rejected on every request)
+    // Always query DB to ensure user is active (deactivated users rejected on every request)
     const [rows] = await pool.query(
       'SELECT user_id, username, full_name, role, is_active FROM USERS WHERE user_id = ?',
       [decoded.userId]
